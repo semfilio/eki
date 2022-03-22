@@ -5,6 +5,9 @@
 pub mod fluid;
 pub mod node;
 pub mod nodes;
+pub mod edge;
+pub mod edges;
+pub mod utility;
 
 //Re-exports
 pub use self::fluid::Fluid;

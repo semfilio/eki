@@ -1,7 +1,5 @@
 use eki::node::Node;
-use eki::nodes::{
-    pressure::Pressure, flow::Flow, connection::Connection
-};
+use eki::nodes::{ pressure::Pressure, flow::Flow, connection::Connection };
 
 #[test]
 fn default() {
