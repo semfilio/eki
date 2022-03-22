@@ -9,7 +9,7 @@ fn default() {
     assert_eq!( *node.elevation(), 0.0 );
     assert_eq!( *node.pressure(), 101325.0 );
     assert_eq!( *node.consumption(), 0.0 );
-    let mut z = node.elevation();
+    let z = node.elevation();
     *z = 3.14; 
     assert_eq!( *node.elevation(), 3.14 );
     assert_eq!( node.id(), 0 );
@@ -22,7 +22,7 @@ fn head() {
     let density = 1000.0;
     let head = node.head(g, density);
     assert_eq!( head, 101325.0 / (g * density) );
-    let mut z = node.elevation();
+    let z = node.elevation();
     *z = 3.14; 
     let head = node.head(g, density);
     assert_eq!( head, 3.14 + 101325.0 / (g * density) );
