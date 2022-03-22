@@ -1,12 +1,12 @@
 [package]
 name = "eki"
 version = "0.1.0"
+authors = ["anthonyoneill <ajoneill@protonmail.com>"]
 edition = "2021"
 description = "Eki is a solver for steady and transient flow in fluid networks."
 license = "GPL-2.0-or-later WITH Bison-exception-2.2"
 repository = "https://github.com/anthonyoneill/eki"
 readme = "README.md"
-homepage = "https://eki.rs/"
 documentation = "https://docs.rs/eki"
 
 
