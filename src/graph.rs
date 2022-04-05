@@ -24,8 +24,16 @@ impl Graph {
         self.nodes.clone()
     }
 
+    pub fn mut_nodes(&mut self) -> &mut Vec<Node> {
+        &mut self.nodes
+    }
+
     pub fn edges(&self) -> Vec<Edge> {
         self.edges.clone()
+    }
+
+    pub fn mut_edges(&mut self) -> &mut Vec<Edge> {
+        &mut self.edges
     }
 
     pub fn count_links(&self, node: Node) -> usize {
@@ -172,6 +180,14 @@ impl Graph {
                 }*/
                 consumption[i] = *self.nodes[i].consumption();
             }
+        }
+        consumption
+    }
+
+    pub fn consumption_volume_flow(&mut self, density: f64 ) -> Vec64 {
+        let mut consumption = self.consumption();
+        for i in 0..self.num_nodes() {
+            consumption[i] /= density;
         }
         consumption
     }

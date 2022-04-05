@@ -102,11 +102,12 @@ impl Solver {
         self.solver_type == SolverType::Transient
     }
 
-    pub fn solve_steady(&mut self, network: &mut Graph, fluid: &Fluid) -> Result<usize,f64> {
+    pub fn solve_steady(&mut self, network: &mut Graph, fluid: &Fluid, create_guess: bool ) 
+        -> Result<usize,f64> 
+    {
         let nu: f64 = fluid.kinematic_viscosity();
         let (n, m) = ( network.num_nodes(), network.num_edges() );
         let size = n + m;
-
         if size == 0 { return Err(1.0); }
         if m == 0 { return Err(1.0); }
 
@@ -119,26 +120,19 @@ impl Solver {
 
         //TODO what about when elements are added to the network?
         //TODO could add random perutbation to known solution
-        if self.solved_steady {
-            ( q_guess, h_guess ) = network.steady_solution( fluid.density(), self.g );
-            println!("Using previous solution.");
-        } else {
+        if create_guess {
             ( q_guess, h_guess ) = network.create_guess( fluid, self.g );
-            println!("Creating a new guess.");
+        } else {
+            ( q_guess, h_guess ) = network.steady_solution( fluid.density(), self.g );
         }
 
         let mut iter: usize = 0;
         let mut max_residual = 1.0;
         while iter < self.max_iter && max_residual > self.tolerance {
-            // Assemble the matrix problem
             let mut b = Vec64::new( size, 0.0 );
             let mut mat = Mat64::new( size, size, 0.0 );
             // Continuity equation at each node
-            let mut continuity_residual = network.consumption();
-            // Convert to volume flow rate
-            for i in 0..n {
-                continuity_residual[i] /= fluid.density();
-            }
+            let mut continuity_residual = network.consumption_volume_flow( fluid.density() );
             continuity_residual -= kt.clone() * q_guess.clone();
             for i in 0..n {
                 for j in 0..m {
@@ -173,12 +167,7 @@ impl Solver {
                 }
             }
 
-
-            //println!( "mat = {}", mat );
-            //println!( "b = {}", b );
-            // Solve the system of equations
             let correction = mat.solve_basic( b.clone() );
-            //println!( "correction = {}", correction );
             // Update the solution
             for i in 0..m {
                 q_guess[i] += correction[i];
