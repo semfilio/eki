@@ -98,6 +98,13 @@ impl Edge {
         }
     }
 
+    pub fn k_values(&mut self) -> Option<&mut Vec<(f64, f64)>> {
+        match self {
+            Edge::Pipe(_edge) => None,
+            Edge::Valve(edge) => Some(&mut edge.k),
+        }
+    }
+
     pub fn pressure_loss_coefficient(&self) -> Option<f64> {
         match self {
             Edge::Pipe(_edge) => None,

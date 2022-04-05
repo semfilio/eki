@@ -2,7 +2,7 @@ use eki::fluid::Fluid;
 use eki::node::Node;
 use eki::nodes::{ pressure::Pressure };
 use eki::edge::Edge;
-use eki::edges::{ pipe::Pipe };
+use eki::edges::{ pipe::Pipe, valve::Valve };
 use eki::graph::Graph;
 use eki::solver::{Solver, SolverType};
 
@@ -106,4 +106,28 @@ fn initial_guess() {
     }
     let mass_flow = *graph.edges()[0].mass_flow();
     assert!( ( mass_flow - 6.6243271 ).abs() < 1.0e-6 );
+}
+
+#[test]
+fn steady_valve() {
+    let mut graph = Graph::new();
+    let mut node_from = Node::Pressure( Pressure::new( 0 ) );
+    *node_from.pressure() = 111325.0;
+    graph.add_node( node_from.clone() );
+    let node_to = Node::Pressure( Pressure::new( 1 ) );
+    graph.add_node( node_to.clone() );
+    let mut valve = Edge::Valve( Valve::new( node_from, node_to ) );
+    *valve.k_values().unwrap() = vec![ 
+        (0.0, 1.0e16),
+        (0.5, 7.0),
+        (1.0, 0.25),
+    ];
+    *valve.open_percent().unwrap() = 0.5;
+    graph.add_edge( valve );
+    let fluid = Fluid::default();
+    let mut solver = Solver::default();
+    let result = solver.solve_steady( &mut graph, &fluid, true );
+    assert!( result.is_ok() && !result.is_err() );
+    let mass_flow = *graph.edges()[0].mass_flow();
+    assert!( ( mass_flow - 3.6536088 ).abs() < 1.0e-6 );
 }
