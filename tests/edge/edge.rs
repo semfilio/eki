@@ -8,7 +8,7 @@ fn pipe() {
     let node_from = Node::Pressure( Pressure::new( 0 ) );
     let node_to = Node::Flow( Flow::new( 1 ) );
     let mut edge = Edge::Pipe( Pipe::new( node_from, node_to ) );
-    (*edge.mass_flow())[0] = 1.0;
+    *edge.steady_mass_flow() = 1.0;
     assert_eq!( *edge.mass_flow(), vec![ 1.0 ] );
     assert_eq!( edge.id(), (0,1) );
     assert_eq!( *edge.length().unwrap(), 10.0 );

@@ -65,6 +65,14 @@ impl Node {
         }
     }
 
+    pub fn steady_pressure(&mut self) -> &mut f64 {
+        &mut self.pressure()[0]
+    }
+
+    pub fn current_pressure(&mut self) -> f64 {
+        *self.pressure().last().unwrap()
+    }
+
     pub fn consumption(&mut self) -> &mut Vec<f64> {
         match self {
             Node::Pressure(node) => &mut node.consumption,
@@ -73,15 +81,25 @@ impl Node {
         }
     }
 
+    pub fn steady_consumption(&mut self) -> &mut f64 {
+        &mut self.consumption()[0]
+    }
+
     pub fn head(&mut self, g: f64, density: f64 ) -> Vec<f64> {
         let elevation = *self.elevation();
         let pressure = self.pressure();
-        //let mut head = elevation;
-        //head += (*pressure) / (g * density) ;
         let mut head = vec![0.0; pressure.len()];
         for (i, p) in pressure.iter().enumerate() {
             head[i] = elevation + ((*p) / (g * density)) ;
         }
+        head
+    }
+
+    pub fn steady_head(&mut self, g: f64, density: f64 ) -> f64 {
+        let elevation = *self.elevation();
+        let pressure = self.steady_pressure();
+        let mut head = elevation;
+        head += (*pressure) / (g * density) ;
         head
     }
 
@@ -90,6 +108,14 @@ impl Node {
             Node::Pressure(node) => node.id = id,
             Node::Flow(node) => node.id = id,
             Node::Connection(node) => node.id = id,
+        }
+    }
+
+    pub fn add_boundary_value(&mut self, value: f64 ) {
+        match self {
+            Node::Pressure(node) => node.pressure.push(value),
+            Node::Flow(node) => node.consumption.push(value),
+            Node::Connection(_node) => {},
         }
     }
  

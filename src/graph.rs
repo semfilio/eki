@@ -36,7 +36,7 @@ impl Graph {
         &mut self.edges
     }
 
-    pub fn count_links(&self, node: Node) -> usize {
+    /*pub fn count_links(&self, node: Node) -> usize {
         let mut count = 0;
         for edge in self.edges.clone() {
             if edge.from().id() == node.id() {
@@ -47,7 +47,7 @@ impl Graph {
             }
         }
         count
-    }
+    }*/
 
     pub fn num_nodes(&self) -> usize {
         self.nodes.len()
@@ -170,14 +170,11 @@ impl Graph {
     }
 
     // Return the vector of nodal consumptions (steady) [mdot]
-    pub fn consumption(&mut self) -> Vec64 {
+    pub fn steady_consumption(&mut self) -> Vec64 {
         let n = self.num_nodes();
         let mut consumption = Vec64::new( n, 0.0 );
         for i in 0..n {
             if self.nodes[i].is_known_flow() {
-                /*if let Some( steady_consumption ) = self.nodes[i].consumption() {
-                    consumption[i] = steady_consumption;
-                }*/
                 consumption[i] = (*self.nodes[i].consumption())[0];
             }
         }
@@ -185,167 +182,98 @@ impl Graph {
     }
 
     // Return the vector of nodal consumptions (steady) [Q]
-    pub fn consumption_volume_flow(&mut self, density: f64 ) -> Vec64 {
-        let mut consumption = self.consumption();
+    pub fn steady_consumption_q(&mut self, density: f64 ) -> Vec64 {
+        let mut consumption = self.steady_consumption();
         for i in 0..self.num_nodes() {
             consumption[i] /= density;
         }
         consumption
     }
 
-    // Return the vector of nodal consumptions and specified time step (transient)
-    /*pub fn transient_consumption(&mut self, step: usize ) -> Vec64 {
+    // Return the vector of nodal consumptions and specified time step (transient) [mdot]
+    pub fn consumption(&mut self, step: usize ) -> Vec64 {
         let n = self.num_nodes();
         let mut consumption = Vec64::new( n, 0.0 );
         for i in 0..n {
             if self.nodes[i].is_known_flow() {
-                //TODO deal with option properly
-                consumption[i] = self.nodes[i].consumption().unwrap()[step];
+                consumption[i] = (*self.nodes[i].consumption())[step];
             }
         }
         consumption
-    }*/
+    }
+
+    // Return the vector of nodal consumptions and specified time step (transient) [mdot]
+    pub fn consumption_q(&mut self, step: usize, density: f64 ) -> Vec64 {
+        let mut consumption = self.consumption( step);
+        for i in 0..self.num_nodes() {
+            consumption[i] /= density;
+        }
+        consumption
+    }
 
     // Put the calculated steady solution into the network
     pub fn set_steady_solution(&mut self, q_guess: Vec64, h_guess: Vec64, rho: f64, g: f64 ) {
         let (m, n) = ( self.num_edges(), self.num_nodes() );
         for j in 0..m {
-            /*if let Some(mass_flow) = self.edges[j].mass_flow() {
-                mass_flow[0] = q_guess[j] * rho;
-            }*/
-            (*self.edges[j].mass_flow())[0] = q_guess[j] * rho;
+            *self.edges[j].steady_mass_flow() = q_guess[j] * rho;
         }
         for i in 0..n {
-            //let elevation = *self.nodes[i].elevation().unwrap();
-            /*if let Some(pressure) = self.nodes[i].pressure() {
-                pressure[0] = (h_guess[i] - elevation) * rho * g;
-            }*/
             let elevation = *self.nodes[i].elevation();
-            (*self.nodes[i].pressure())[0] = (h_guess[i] - elevation) * rho * g;
+            *self.nodes[i].steady_pressure() = (h_guess[i] - elevation) * rho * g;
         }
     }
 
     // Return the steady solution as two vectors
-    pub fn steady_solution(&mut self, rho: f64, g: f64) -> (Vec64, Vec64) {
+    pub fn steady_solution_qh(&mut self, rho: f64, g: f64) -> (Vec64, Vec64) {
         let (m, n) = ( self.num_edges(), self.num_nodes() );
         let mut q_guess = Vec64::new( m, 0.0 );
         let mut h_guess = Vec64::new( n, 0.0 );
         for j in 0..m {
-            /*if let Some(mass_flow) = self.edges[j].mass_flow() {
-                q_guess[j] = mass_flow[0] / rho;
-            }*/
-            q_guess[j] = (*self.edges[j].mass_flow())[0] / rho;
+            q_guess[j] = *self.edges[j].steady_mass_flow() / rho;
         }
         for i in 0..n {
-            //let elevation = *self.nodes[i].elevation().unwrap();
-            /*if let Some(pressure) = self.nodes[i].pressure() {
-                h_guess[i] = (pressure[0] / (rho * g)) + elevation;
-            }*/
             let elevation = *self.nodes[i].elevation();
-            h_guess[i] = ((*self.nodes[i].pressure())[0] / (rho * g)) + elevation;
+            h_guess[i] = (*self.nodes[i].steady_pressure() / (rho * g)) + elevation;
         }
         (q_guess, h_guess)
     }
 
-    // Initialise the transient solution using the steady solution
-    /*pub fn initialise_transient(&mut self, tnodes: Vec<f64> ) {
-        let n = tnodes.len();
-        for mut node in self.nodes() {
-            let length = if let Some(pressure) = node.pressure() { pressure.len() } else { n };
-            if n != length {
-                node.create_transient_values( &tnodes );
-                self.update_node( node );
-            }
+    // Return the current solution as two vectors
+    pub fn current_solution_qh(&mut self, rho: f64, g: f64, step: usize ) -> (Vec64, Vec64) {
+        let (m, n) = ( self.num_edges(), self.num_nodes() );
+        let mut q_guess = Vec64::new( m, 0.0 );
+        let mut h_guess = Vec64::new( n, 0.0 );
+        for j in 0..m {
+            //q_guess[j] = self.edges[j].current_mass_flow() / rho;
+            q_guess[j] = self.edges[j].mass_flow()[step] / rho;
         }
-        for mut edge in self.edges() {
-            let length = if let Some(mass_flow) = edge.mass_flow() { mass_flow.len() } else { n };
-            if n != length {
-                edge.create_transient_values( &tnodes );
-                self.update_edge( edge );
-            }
+        for i in 0..n {
+            let elevation = *self.nodes[i].elevation();
+            h_guess[i] = (self.nodes[i].pressure()[step] / (rho * g)) + elevation;
         }
-    }*/
+        (q_guess, h_guess)
+    }
 
     // Put the calculated transient solution into the network
-    /*pub fn set_transient_solution(&mut self, q_guess: Vec64, h_guess: Vec64, fluid: &Fluid, g: f64, step: usize ) {
+    pub fn push_transient_solution(&mut self, q_guess: Vec64, h_guess: Vec64, fluid: &Fluid, g: f64 ) {
         let (m, n) = ( self.num_edges(), self.num_nodes() );
         for j in 0..m {
-            let mass_flow = self.edges[j].mass_flow().unwrap();
-            mass_flow[step+1] = q_guess[j] * fluid.density();
+            let mass_flow = self.edges[j].mass_flow();
+            mass_flow.push( q_guess[j] * fluid.density() );
         }
         for i in 0..n {
             if !self.nodes[i].is_known_pressure() {
-                let elevation = *self.nodes[i].elevation().unwrap();
-                let pressure = self.nodes[i].pressure().unwrap();
-                pressure[step+1] = (h_guess[i] - elevation) * fluid.density() * g;
-
+                let elevation = *self.nodes[i].elevation();
+                let pressure = self.nodes[i].pressure();
+                pressure.push( (h_guess[i] - elevation) * fluid.density() * g );
             }
         }
-    }*/
-
-    pub fn create_guess(&self, fluid: &Fluid, g: f64 ) -> (Vec64, Vec64) {
-        let ( num_nodes, numel ) = ( self.num_nodes(), self.num_edges() );
-        let mut k_matrix = Mat64::new( num_nodes, num_nodes, 0.0 );
-
-        for i in 0..numel {
-            let (ifrom, ito) = self.edges[i].id();
-            let ( a, b ) = ( self.index(ifrom), self.index(ito) );
-            let coefficient = self.edges[i].k_laminar( fluid.kinematic_viscosity() );
-            k_matrix[a][a] += coefficient;
-            k_matrix[b][b] += coefficient;
-            k_matrix[a][b] -= coefficient;
-            k_matrix[b][a] -= coefficient;
-        }
-
-        let mut boundary_conditions = Vec::<Node>::new();
-        for node in 0..num_nodes {
-            if !self.nodes[node].is_connection() {
-                boundary_conditions.push( self.nodes[node].clone() );
-            }
-        }
-
-        let mut consumption = Vec64::new( num_nodes, 0.0 );
-        for mut bc in boundary_conditions {
-            let node = self.index( bc.id() );
-            if bc.is_known_pressure() {
-                //let pressure = bc.pressure().unwrap()[0]; 
-                //let elevation = *bc.elevation().unwrap();
-                let pressure = (*bc.pressure())[0]; 
-                let elevation = *bc.elevation();
-                let val = elevation + pressure / ( fluid.density() * g );
-                for i in 0..num_nodes {                     // (a) - add contributions
-                    consumption[i] -= k_matrix[i][node] * val;
-                }
-                for i in 0..num_nodes {                     // (b) - zero row and column
-                    k_matrix[node][i] = 0.0;
-                    k_matrix[i][node] = 0.0;
-                }
-                k_matrix[node][node] = 1.0;            // (c) - make mat(j,j) = 1
-                consumption[node] = val;               // (d) - make consumption[j] = Hj
-
-            } else { 
-                //consumption[node] += bc.consumption().unwrap()[0] / fluid.density();
-                consumption[node] += (*bc.consumption())[0] / fluid.density();
-            }
-        }
-        let head = k_matrix.solve_basic( consumption.clone() ); // Solve to find the heads at each node
-        let mut flow_rate = Vec64::new( numel, 0.0 ); // Flow rate in each pipe (assuming friction factor = 0.1)
-        for i in 0..numel {
-            let (ifrom, ito) = self.edges[i].id();
-            let ( a, b ) = ( self.index(ifrom), self.index(ito) );
-            let ( h_initial, h_final ) = ( head[a], head[b] );
-            flow_rate[i] = self.edges[i].darcy_approx( h_initial - h_final, g ) * ( h_initial - h_final );
-            if flow_rate[i].is_nan() {
-                flow_rate[i] = 0.0001;
-            }
-        }
-        ( flow_rate, head )
     }
 
-    /* ----- UI functions ----- */
-
-
-
+    pub fn add_boundary_value( &mut self, id: usize, value: f64 ) {
+        let index = self.index(id);
+        self.nodes[index].add_boundary_value( value );
+    }
 
     // TODO check doesn't already exist
     pub fn add_node(&mut self, node: Node ) {

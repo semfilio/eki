@@ -1,3 +1,8 @@
+use ohsl::{ vector::Vec64, matrix::Mat64 };
+use crate::graph::Graph;
+use crate::fluid::Fluid;
+use crate::node::Node;
+
 pub fn friction_factor( relative: f64, reynolds: f64 ) -> f64 {
     if reynolds < 2100.0 {
         64.0 / reynolds 
@@ -18,4 +23,70 @@ pub fn friction_factor( relative: f64, reynolds: f64 ) -> f64 {
         let k2 = (a+b).powf( -1.5 );
         (k1+k2).powf( 0.08333333333 )
     }
+}
+
+pub fn update_solution( qg: &mut Vec64, hg: &mut Vec64, correction: &Vec64 ) {
+    let m = qg.size();
+    for i in 0..m {
+        qg[i] += correction[i];
+    }
+    for i in 0..hg.size() {
+        hg[i] += correction[m+i];
+    }
+}
+
+pub fn laminar_guess( net: &Graph, fluid: &Fluid, g: f64 ) -> (Vec64, Vec64) {
+    let ( num_nodes, numel ) = ( net.num_nodes(), net.num_edges() );
+    let mut k_matrix = Mat64::new( num_nodes, num_nodes, 0.0 );
+
+    for i in 0..numel {
+        let (ifrom, ito) = net.edges()[i].id();
+        let ( a, b ) = ( net.index(ifrom), net.index(ito) );
+        let coefficient = net.edges()[i].k_laminar( fluid.kinematic_viscosity() );
+        k_matrix[a][a] += coefficient;
+        k_matrix[b][b] += coefficient;
+        k_matrix[a][b] -= coefficient;
+        k_matrix[b][a] -= coefficient;
+    }
+
+    let mut boundary_conditions = Vec::<Node>::new();
+    for node in 0..num_nodes {
+        if !net.nodes()[node].is_connection() {
+            boundary_conditions.push( net.nodes()[node].clone() );
+        }
+    }
+
+    let mut consumption = Vec64::new( num_nodes, 0.0 );
+    for mut bc in boundary_conditions {
+        let node = net.index( bc.id() );
+        if bc.is_known_pressure() {
+            let pressure = *bc.steady_pressure();
+            let elevation = *bc.elevation();
+            let val = elevation + pressure / ( fluid.density() * g );
+            for i in 0..num_nodes {                     // (a) - add contributions
+                consumption[i] -= k_matrix[i][node] * val;
+            }
+            for i in 0..num_nodes {                     // (b) - zero row and column
+                k_matrix[node][i] = 0.0;
+                k_matrix[i][node] = 0.0;
+            }
+            k_matrix[node][node] = 1.0;            // (c) - make mat(j,j) = 1
+            consumption[node] = val;               // (d) - make consumption[j] = Hj
+
+        } else { 
+            consumption[node] += *bc.steady_consumption() / fluid.density();
+        }
+    }
+    let head = k_matrix.solve_basic( consumption.clone() ); // Solve to find the heads at each node
+    let mut flow_rate = Vec64::new( numel, 0.0 ); // Flow rate in each pipe (assuming friction factor = 0.1)
+    for i in 0..numel {
+        let (ifrom, ito) = net.edges()[i].id();
+        let ( a, b ) = ( net.index(ifrom), net.index(ito) );
+        let ( h_initial, h_final ) = ( head[a], head[b] );
+        flow_rate[i] = net.edges()[i].darcy_approx( h_initial - h_final, g ) * ( h_initial - h_final );
+        if flow_rate[i].is_nan() {
+            flow_rate[i] = 0.0001;
+        }
+    }
+    ( flow_rate, head )
 }

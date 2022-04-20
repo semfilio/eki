@@ -4,7 +4,7 @@ and other components.
 
 ## TODO
  
-- [ ] Convert solve_transient to use time_step and a specfied number of steps before outputting solution
+- [ ] Steady tests ( Drive / Flite Software Shared Docs / FluidFlow QA and Examples / QA Incompressible  ) -> key examples
 - [ ] Transient tests + validation
 - [ ] Use in PiNTS
 - [ ] Use in fluidity

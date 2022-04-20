@@ -1,6 +1,7 @@
 use ohsl::{vector::Vec64, matrix::Mat64};
 use crate::graph::Graph;
 use crate::fluid::Fluid;
+use crate::utility;
 
 #[derive(serde::Deserialize, serde::Serialize)]
 pub struct Solver {
@@ -12,6 +13,8 @@ pub struct Solver {
     tmax: f64,                  // Maximum simulation time [s]
     dt: f64,                    // Time step [s]
     g: f64,                     // Acceleration due to gravity [m/s^2]
+    tnodes: Vec<f64>,           // Time vector for transient solver [s]
+    theta: f64,                 // Numerical scheme parameter
 }
 
 #[derive(serde::Serialize, serde::Deserialize, PartialEq, Clone)]
@@ -38,22 +41,22 @@ impl Default for Solver {
             max_iter: 20,
             tolerance: 1.0e-8,
             tmax: 5.0,
-            dt: 0.1,
+            dt: 0.1, //TODO do we need this?
             g: 9.80665,
+            tnodes: vec![0.0],
+            theta: 1.0, // 0 = explicit, 1 = implicit, 0.5 = Crank-Nicolson
         }
     }
 }
 
 impl Solver {
 
-    //TODO
-    pub fn tnodes(&self) -> Vec<f64> {
-        let num_time_steps: usize = ( self.tmax / self.dt ).ceil() as usize;
-        let mut tnodes = vec![ 0.0 ];
-        for n in 0..num_time_steps {
-            tnodes.push( tnodes[n] + self.dt );
-        }
-        tnodes
+    pub fn tnodes(&mut self) -> Vec<f64> {
+        self.tnodes.clone()
+    }
+
+    pub fn theta(&mut self) -> &mut f64 {
+        &mut self.theta
     }
 
     pub fn reset(&mut self) {
@@ -118,9 +121,9 @@ impl Solver {
 
         let ( mut q_guess, mut h_guess ): ( ohsl::Vec64, ohsl::Vec64 );
         if create_guess {
-            ( q_guess, h_guess ) = network.create_guess( fluid, self.g );
+            ( q_guess, h_guess ) = utility::laminar_guess( network, fluid, self.g );
         } else {
-            ( q_guess, h_guess ) = network.steady_solution( fluid.density(), self.g );
+            ( q_guess, h_guess ) = network.steady_solution_qh( fluid.density(), self.g );
         }
 
         let mut iter: usize = 0;
@@ -129,7 +132,7 @@ impl Solver {
             let mut b = Vec64::new( size, 0.0 );
             let mut mat = Mat64::new( size, size, 0.0 );
             // Continuity equation at each node
-            let mut continuity_residual = network.consumption_volume_flow( fluid.density() );
+            let mut continuity_residual = network.steady_consumption_q( fluid.density() );
             continuity_residual -= kt.clone() * q_guess.clone();
             for i in 0..n {
                 for j in 0..m {
@@ -159,22 +162,14 @@ impl Solver {
                         b[i] = 0.0;
                     }
                     mat[i][m+i] = 1.0;
-                    let head = network.nodes[i].head( self.g, fluid.density() );
-                    b[i] = head[0] - h_guess[i];
+                    let head = network.nodes[i].steady_head( self.g, fluid.density() );
+                    b[i] = head - h_guess[i];
                 }
             }
 
             let correction = mat.solve_basic( b.clone() );
-            // Update the solution
-            for i in 0..m {
-                q_guess[i] += correction[i];
-            }
-            for i in 0..n {
-                h_guess[i] += correction[m+i];
-            }
-            // Check convergence & iterate
+            utility::update_solution( &mut q_guess, &mut h_guess, &correction );
             max_residual = correction.norm_inf();
-            //println!( "iter = {}\t residual = {:+.2e}", iter, max_residual );
             iter += 1;
         }
 
@@ -188,57 +183,17 @@ impl Solver {
         }
     }
 
-    pub fn solve_transient(&mut self, network: &mut Graph, fluid: &Fluid ) -> Result<(),(f64,f64)> {
-        //TODO network.initialise_transient( self.tnodes() );
-        let num_time_steps: usize = ( self.tmax / self.dt ).ceil() as usize;
-        let mut tnodes = vec![ 0.0 ];
-        let ( mut qn, mut hn ) = network.steady_solution( fluid.density(), self.g );
-        //println!( " * qn = {}", qn );
-        //println!( " * hn = {}", hn );
-        let mut converged = false;
-        let mut error = ( 0.0, 0.0 ); 
-
-        // Time stepping
-        for n in 0..num_time_steps {
-            tnodes.push( tnodes[n] + self.dt );
-            let time = tnodes[n+1];
-            // Single time step
-            let result = self.time_step( network, n, &qn, &hn, fluid );
-            match result {
-                Ok( ( qg, hg ) ) => { 
-                    /*println!( " * Time step {}: {:.2e}", n, time );
-                    println!( " * q = {:?}", qg );
-                    println!( " * h = {:?}", hg );*/
-                    //TODO network.set_transient_solution( qg.clone(), hg.clone(), fluid, self.g(), n );
-                    qn = qg;
-                    hn = hg;
-                    converged = true;
-                },
-                Err(residual) => { 
-                    error = ( time, residual );
-                    converged = false;
-                    break; 
-                },
-            }
-        }
-        //self.tnodes = Some( tnodes );
-        if converged {
-            self.solved_transient = true;
-            Ok(())
-        } else {
-            self.solved_transient = false;
-            Err( error )
-        }
-    }
-
-    fn time_step(&mut self, network: &mut Graph, step: usize, qn: &Vec64, hn: &Vec64, fluid: &Fluid ) -> Result<(Vec64,Vec64),f64> {
+    pub fn time_step(&mut self, network: &mut Graph, fluid: &Fluid, dt: f64 ) -> Result<usize,f64> {
+        let step = self.tnodes.len() - 1;
+        let ( qn, hn ) = network.current_solution_qh( fluid.density(), self.g, step ); 
         let ( mut qg, mut hg ) = ( qn.clone(), hn.clone() );
+        
         let (n, m) = ( network.num_nodes(), network.num_edges() );
         let size = n + m;
         if size == 0 { return Err(1.0); }
         if m == 0 { return Err(1.0); }
-        let theta = 1.0; //TODO allow user specified theta
-        let invdt = 1.0 / self.dt;
+        if !self.solved_steady { return Err(1.0); }
+        let invdt = 1.0 / dt;
 
         let kt = network.incidence_matrix();
         let k = network.k_matrix();
@@ -246,23 +201,18 @@ impl Solver {
         let b_diag = network.b_diag();
 
         let mut iter: usize = 0;
-        let mut max_residual = 1.0;
+        let mut max_residual: f64 = 1.0;
         // Iterate to convergence 
         while iter < self.max_iter && max_residual > self.tolerance {
             // Assemble the matrix problem
             let mut b = Vec64::new( size, 0.0 );
             let mut mat = Mat64::new( size, size, 0.0 );
 
-            let qbar = theta * qg.clone() + ( 1.0 - theta ) * qn.clone();
-            let hbar = theta * hg.clone() + ( 1.0 - theta ) * hn.clone();
+            let qbar = self.theta * qg.clone() + ( 1.0 - self.theta ) * qn.clone();
+            let hbar = self.theta * hg.clone() + ( 1.0 - self.theta ) * hn.clone();
 
             // Continuity equation at each node
-            //let mut continuity_residual = network.transient_consumption( step + 1 );
-            let mut continuity_residual = network.consumption();
-            // Convert to volume flow rate
-            for i in 0..n {
-                continuity_residual[i] /= fluid.density();
-            }
+            let mut continuity_residual = network.consumption_q( step + 1, fluid.density() );
             continuity_residual -= kt.clone() * qbar.clone();
             let mut hdiff = hg.clone() - hn.clone();
             for i in 0..n {
@@ -271,7 +221,7 @@ impl Solver {
             continuity_residual -= invdt * hdiff;
             for i in 0..n {
                 for j in 0..m {
-                    mat[i][j] = theta * kt[i][j];
+                    mat[i][j] = self.theta * kt[i][j];
                 }
                 mat[i][m+i] = invdt * d_diag[i];
                 b[i] = continuity_residual[i];
@@ -288,7 +238,7 @@ impl Solver {
             // Fill the K matrix in bottom right corner
             for i in 0..m {
                 for j in 0..n {
-                    mat[n+i][m+j] = - theta * k[i][j];
+                    mat[n+i][m+j] = - self.theta * k[i][j];
                 }
             }
 
@@ -296,38 +246,27 @@ impl Solver {
             for i in 0..n {
                 if network.nodes[i].is_known_pressure() {
                     // Clear row
-                    for k in 0..n+m {
+                    for k in 0..size {
                         mat[i][k] = 0.0;
                         b[i] = 0.0;
                     }
-                    mat[i][m+i] = theta;
+                    mat[i][m+i] = self.theta;
                     let head = network.nodes[i].head( self.g, fluid.density() );
                     b[i] = head[ step + 1 ] - hbar[i];
                 }
             }
 
-            //println!( "mat = {}", mat );
-            //println!( "b = {}", b );
-            // Solve the system of equations
             let correction = mat.solve_basic( b.clone() );
-            //println!( "correction = {}", correction );
-
-            // Update the solution
-            for i in 0..m {
-                qg[i] += correction[i];
-            }
-            for i in 0..n {
-                hg[i] += correction[m+i];
-            }
-            
-            // Check convergence & iterate
+            utility::update_solution( &mut qg, &mut hg, &correction );
             max_residual = correction.norm_inf();
-            //println!( "iter = {}\t residual = {:+.2e}", iter, max_residual );
             iter += 1;
         }
 
         if iter < self.max_iter && !max_residual.is_nan() {
-            Ok( ( qg, hg ) )
+            let t = *self.tnodes.last().unwrap();
+            self.tnodes.push( t + dt );
+            network.push_transient_solution( qg, hg, fluid, *self.g() );
+            Ok( iter )
         } else {
             Err( max_residual )
         }

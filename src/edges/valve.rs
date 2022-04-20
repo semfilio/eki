@@ -45,7 +45,6 @@ impl Valve {
     }
 
     pub fn interpolate_k(&self, open_percent: f64 ) -> f64 {
-        //let k = self.valve_type.valve_data();
         let mut openlower = self.k[0].0;
         let mut openupper = self.k[1].0;
 
@@ -62,8 +61,6 @@ impl Valve {
                 break;
             }
         }
-
-        //println!("klower: {:+e}, kupper: {:+e}, openlower: {}, openupper: {}", klower, kupper, openlower, openupper);
 
         if openlower == openupper {
             klower
