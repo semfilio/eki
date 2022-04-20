@@ -2,8 +2,8 @@
 pub struct Flow {
     pub id: usize,
     pub elevation: f64,
-    pub pressure: f64,
-    pub consumption: f64,
+    pub pressure: Vec<f64>,
+    pub consumption: Vec<f64>,
 }
 
 impl Default for Flow {
@@ -17,8 +17,8 @@ impl Flow {
         Flow {
             id,
             elevation: 0.0,
-            pressure: 101325.0,
-            consumption: -0.1,
+            pressure: vec![ 101325.0 ],
+            consumption: vec![ -0.1 ],
         }
     }
 }

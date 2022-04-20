@@ -42,7 +42,7 @@ impl Edge {
         }
     }
 
-    pub fn mass_flow(&mut self) -> &mut f64 {
+    pub fn mass_flow(&mut self) -> &mut Vec<f64> {
         match self {
             Edge::Pipe(edge) => &mut edge.mass_flow,
             Edge::Valve(edge) => &mut edge.mass_flow,
@@ -91,7 +91,7 @@ impl Edge {
         }
     }
 
-    pub fn open_percent(&mut self) -> Option<&mut f64> {
+    pub fn open_percent(&mut self) -> Option<&mut Vec<f64>> {
         match self {
             Edge::Pipe(_edge) => None,
             Edge::Valve(edge) => Some(&mut edge.open_percent),

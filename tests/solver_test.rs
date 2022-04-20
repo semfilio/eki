@@ -49,7 +49,7 @@ fn reset() {
 fn single_pipe() {
     let mut graph = Graph::new();
     let mut node_from = Node::Pressure( Pressure::new( 0 ) );
-    *node_from.pressure() = 121325.0;
+    (*node_from.pressure())[0] = 121325.0;
     graph.add_node( node_from.clone() );
     let node_to = Node::Pressure( Pressure::new( 1 ) );
     graph.add_node( node_to.clone() );
@@ -62,7 +62,7 @@ fn single_pipe() {
     if let Ok(iter) = result {
         assert_eq!( iter, 5 );
     }
-    let mass_flow = *graph.edges()[0].mass_flow();
+    let mass_flow = (*graph.edges()[0].mass_flow())[0];
     assert!( ( mass_flow - 6.7865862 ).abs() < 1.0e-6 );
 }
 
@@ -70,7 +70,7 @@ fn single_pipe() {
 fn initial_guess() {
     let mut graph = Graph::new();
     let mut node_from = Node::Pressure( Pressure::new( 0 ) );
-    *node_from.pressure() = 121325.0;
+    (*node_from.pressure())[0] = 121325.0;
     graph.add_node( node_from.clone() );
     let node_to = Node::Pressure( Pressure::new( 1 ) );
     graph.add_node( node_to.clone() );
@@ -88,14 +88,14 @@ fn initial_guess() {
 
     // Modify network but use previous solution as initial guess
     let create_guess = false;
-    // Change pressure of from node
-    *graph.mut_nodes()[0].pressure() = 122325.0;
+    // Change steady pressure of from node
+    (*graph.mut_nodes()[0].pressure())[0] = 122325.0;
     let result = solver.solve_steady( &mut graph, &fluid, create_guess );
     assert!( result.is_ok() && !result.is_err() );
     if let Ok(iter) = result {
         assert!( iter < iterations );
     }
-    let mass_flow = *graph.edges()[0].mass_flow();
+    let mass_flow = (*graph.edges()[0].mass_flow())[0];
     assert!( ( mass_flow - 6.960918 ).abs() < 1.0e-6 );
     // Change the length of the pipe
     *graph.mut_edges()[0].length().unwrap() = 11.0;
@@ -104,7 +104,7 @@ fn initial_guess() {
     if let Ok(iter) = result {
         assert!( iter < iterations );
     }
-    let mass_flow = *graph.edges()[0].mass_flow();
+    let mass_flow = (*graph.edges()[0].mass_flow())[0];
     assert!( ( mass_flow - 6.6243271 ).abs() < 1.0e-6 );
 }
 
@@ -112,7 +112,7 @@ fn initial_guess() {
 fn steady_valve() {
     let mut graph = Graph::new();
     let mut node_from = Node::Pressure( Pressure::new( 0 ) );
-    *node_from.pressure() = 111325.0;
+    (*node_from.pressure())[0] = 111325.0;
     graph.add_node( node_from.clone() );
     let node_to = Node::Pressure( Pressure::new( 1 ) );
     graph.add_node( node_to.clone() );
@@ -122,12 +122,12 @@ fn steady_valve() {
         (0.5, 7.0),
         (1.0, 0.25),
     ];
-    *valve.open_percent().unwrap() = 0.5;
+    (*valve.open_percent().unwrap())[0] = 0.5;
     graph.add_edge( valve );
     let fluid = Fluid::default();
     let mut solver = Solver::default();
     let result = solver.solve_steady( &mut graph, &fluid, true );
     assert!( result.is_ok() && !result.is_err() );
-    let mass_flow = *graph.edges()[0].mass_flow();
+    let mass_flow = (*graph.edges()[0].mass_flow())[0];
     assert!( ( mass_flow - 3.6536088 ).abs() < 1.0e-6 );
 }

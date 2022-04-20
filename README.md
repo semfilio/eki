@@ -4,7 +4,6 @@ and other components.
 
 ## TODO
  
-- [ ] Convert time_step to use initial_network and new_network (to store the transient solution)
 - [ ] Convert solve_transient to use time_step and a specfied number of steps before outputting solution
 - [ ] Transient tests + validation
 - [ ] Use in PiNTS

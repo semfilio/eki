@@ -117,9 +117,6 @@ impl Solver {
         let kt = network.incidence_matrix();
 
         let ( mut q_guess, mut h_guess ): ( ohsl::Vec64, ohsl::Vec64 );
-
-        //TODO what about when elements are added to the network?
-        //TODO could add random perutbation to known solution
         if create_guess {
             ( q_guess, h_guess ) = network.create_guess( fluid, self.g );
         } else {
@@ -163,7 +160,7 @@ impl Solver {
                     }
                     mat[i][m+i] = 1.0;
                     let head = network.nodes[i].head( self.g, fluid.density() );
-                    b[i] = head - h_guess[i];
+                    b[i] = head[0] - h_guess[i];
                 }
             }
 
@@ -193,12 +190,7 @@ impl Solver {
 
     pub fn solve_transient(&mut self, network: &mut Graph, fluid: &Fluid ) -> Result<(),(f64,f64)> {
         //TODO network.initialise_transient( self.tnodes() );
-        let t_max = *self.tmax();
-        //println!( " * tmax = {}", t_max );
-        let dt = *self.dt();
-        //println!( " * dt = {}", dt );
-        let num_time_steps: usize = ( t_max / dt ).ceil() as usize;
-        //println!( " * # Time steps = {}", num_time_steps );
+        let num_time_steps: usize = ( self.tmax / self.dt ).ceil() as usize;
         let mut tnodes = vec![ 0.0 ];
         let ( mut qn, mut hn ) = network.steady_solution( fluid.density(), self.g );
         //println!( " * qn = {}", qn );
@@ -208,7 +200,7 @@ impl Solver {
 
         // Time stepping
         for n in 0..num_time_steps {
-            tnodes.push( tnodes[n] + dt );
+            tnodes.push( tnodes[n] + self.dt );
             let time = tnodes[n+1];
             // Single time step
             let result = self.time_step( network, n, &qn, &hn, fluid );
@@ -310,7 +302,7 @@ impl Solver {
                     }
                     mat[i][m+i] = theta;
                     let head = network.nodes[i].head( self.g, fluid.density() );
-                    b[i] = head - hbar[i];
+                    b[i] = head[ step + 1 ] - hbar[i];
                 }
             }
 

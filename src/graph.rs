@@ -169,7 +169,7 @@ impl Graph {
         b
     }
 
-    // Return the vector of nodal consumptions (steady)
+    // Return the vector of nodal consumptions (steady) [mdot]
     pub fn consumption(&mut self) -> Vec64 {
         let n = self.num_nodes();
         let mut consumption = Vec64::new( n, 0.0 );
@@ -178,12 +178,13 @@ impl Graph {
                 /*if let Some( steady_consumption ) = self.nodes[i].consumption() {
                     consumption[i] = steady_consumption;
                 }*/
-                consumption[i] = *self.nodes[i].consumption();
+                consumption[i] = (*self.nodes[i].consumption())[0];
             }
         }
         consumption
     }
 
+    // Return the vector of nodal consumptions (steady) [Q]
     pub fn consumption_volume_flow(&mut self, density: f64 ) -> Vec64 {
         let mut consumption = self.consumption();
         for i in 0..self.num_nodes() {
@@ -212,7 +213,7 @@ impl Graph {
             /*if let Some(mass_flow) = self.edges[j].mass_flow() {
                 mass_flow[0] = q_guess[j] * rho;
             }*/
-            *self.edges[j].mass_flow() = q_guess[j] * rho;
+            (*self.edges[j].mass_flow())[0] = q_guess[j] * rho;
         }
         for i in 0..n {
             //let elevation = *self.nodes[i].elevation().unwrap();
@@ -220,7 +221,7 @@ impl Graph {
                 pressure[0] = (h_guess[i] - elevation) * rho * g;
             }*/
             let elevation = *self.nodes[i].elevation();
-            *self.nodes[i].pressure() = (h_guess[i] - elevation) * rho * g;
+            (*self.nodes[i].pressure())[0] = (h_guess[i] - elevation) * rho * g;
         }
     }
 
@@ -233,7 +234,7 @@ impl Graph {
             /*if let Some(mass_flow) = self.edges[j].mass_flow() {
                 q_guess[j] = mass_flow[0] / rho;
             }*/
-            q_guess[j] = *self.edges[j].mass_flow() / rho;
+            q_guess[j] = (*self.edges[j].mass_flow())[0] / rho;
         }
         for i in 0..n {
             //let elevation = *self.nodes[i].elevation().unwrap();
@@ -241,7 +242,7 @@ impl Graph {
                 h_guess[i] = (pressure[0] / (rho * g)) + elevation;
             }*/
             let elevation = *self.nodes[i].elevation();
-            h_guess[i] = (*self.nodes[i].pressure() / (rho * g)) + elevation;
+            h_guess[i] = ((*self.nodes[i].pressure())[0] / (rho * g)) + elevation;
         }
         (q_guess, h_guess)
     }
@@ -309,7 +310,7 @@ impl Graph {
             if bc.is_known_pressure() {
                 //let pressure = bc.pressure().unwrap()[0]; 
                 //let elevation = *bc.elevation().unwrap();
-                let pressure = *bc.pressure(); 
+                let pressure = (*bc.pressure())[0]; 
                 let elevation = *bc.elevation();
                 let val = elevation + pressure / ( fluid.density() * g );
                 for i in 0..num_nodes {                     // (a) - add contributions
@@ -324,7 +325,7 @@ impl Graph {
 
             } else { 
                 //consumption[node] += bc.consumption().unwrap()[0] / fluid.density();
-                consumption[node] += *bc.consumption() / fluid.density();
+                consumption[node] += (*bc.consumption())[0] / fluid.density();
             }
         }
         let head = k_matrix.solve_basic( consumption.clone() ); // Solve to find the heads at each node

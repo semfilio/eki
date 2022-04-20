@@ -7,14 +7,12 @@ use crate::fluid::Fluid;
 pub struct Valve {
     pub from: Node,
     pub to: Node,
-    pub mass_flow: f64,
+    pub mass_flow: Vec<f64>,
     pub diameter: f64,
     pub thickness: f64,
     pub youngs_modulus: f64,
     pub k: Vec<(f64, f64)>, // (% open, k)
-    pub open_percent: f64,
-    pub closing_time: f64,
-    pub profile_exponent: f64,
+    pub open_percent: Vec<f64>,
 }
 
 impl Valve {
@@ -22,11 +20,11 @@ impl Valve {
         Valve { 
             from, 
             to, 
-            mass_flow: 0.0,
+            mass_flow: vec![ 0.0 ],
             diameter: 52.5e-3,
             thickness: 0.005, // 5mm pipe
             youngs_modulus: 2.0e11, // Steel pipe TODO should be able to modify
-            open_percent: 1.0,
+            open_percent: vec![ 1.0 ],
             k: vec![ 
                 (0.000, 1.0e16),
                 (0.111, 700.),
@@ -39,13 +37,11 @@ impl Valve {
                 (0.888, 0.5),
                 (1.000, 0.25),
             ],
-            closing_time: 2.1,
-            profile_exponent: 1.5,
         }
     }
 
     pub fn k(&self) -> f64 {
-        self.interpolate_k( self.open_percent )
+        self.interpolate_k( self.open_percent[0] )
     }
 
     pub fn interpolate_k(&self, open_percent: f64 ) -> f64 {

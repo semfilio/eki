@@ -8,8 +8,8 @@ fn pipe() {
     let node_from = Node::Pressure( Pressure::new( 0 ) );
     let node_to = Node::Flow( Flow::new( 1 ) );
     let mut edge = Edge::Pipe( Pipe::new( node_from, node_to ) );
-    *edge.mass_flow() = 1.0;
-    assert_eq!( *edge.mass_flow(), 1.0 );
+    (*edge.mass_flow())[0] = 1.0;
+    assert_eq!( *edge.mass_flow(), vec![ 1.0 ] );
     assert_eq!( edge.id(), (0,1) );
     assert_eq!( *edge.length().unwrap(), 10.0 );
     assert_eq!( *edge.diameter(), 52.5e-3 );
@@ -27,7 +27,7 @@ fn valve() {
     assert_eq!( *edge.diameter(), 52.5e-3 );
     assert_eq!( *edge.thickness(), 0.005 );
     assert_eq!( *edge.youngs_modulus(), 2.0e11 );
-    assert_eq!( *edge.open_percent().unwrap(), 1.0 );
+    assert_eq!( *edge.open_percent().unwrap(), vec![ 1.0 ] );
     assert_eq!( edge.pressure_loss_coefficient().unwrap(), 0.25 );
 }
 

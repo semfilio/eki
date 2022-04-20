@@ -57,7 +57,7 @@ impl Node {
         }
     }
 
-    pub fn pressure(&mut self) -> &mut f64 {
+    pub fn pressure(&mut self) -> &mut Vec<f64> {
         match self {
             Node::Pressure(node) => &mut node.pressure,
             Node::Flow(node) => &mut node.pressure,
@@ -65,7 +65,7 @@ impl Node {
         }
     }
 
-    pub fn consumption(&mut self) -> &mut f64 {
+    pub fn consumption(&mut self) -> &mut Vec<f64> {
         match self {
             Node::Pressure(node) => &mut node.consumption,
             Node::Flow(node) => &mut node.consumption,
@@ -73,11 +73,15 @@ impl Node {
         }
     }
 
-    pub fn head(&mut self, g: f64, density: f64 ) -> f64 {
+    pub fn head(&mut self, g: f64, density: f64 ) -> Vec<f64> {
         let elevation = *self.elevation();
         let pressure = self.pressure();
-        let mut head = elevation;
-        head += (*pressure) / (g * density) ;
+        //let mut head = elevation;
+        //head += (*pressure) / (g * density) ;
+        let mut head = vec![0.0; pressure.len()];
+        for (i, p) in pressure.iter().enumerate() {
+            head[i] = elevation + ((*p) / (g * density)) ;
+        }
         head
     }
 

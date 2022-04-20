@@ -8,7 +8,7 @@ use crate::utility;
 pub struct Pipe {
     pub from: Node,
     pub to: Node,
-    pub mass_flow: f64,
+    pub mass_flow: Vec<f64>,
     pub length: f64,
     pub diameter: f64,
     pub roughness: f64,
@@ -21,7 +21,7 @@ impl Pipe {
         Pipe { 
             from, 
             to, 
-            mass_flow: 0.0,
+            mass_flow: vec![ 0.0 ],
             length: 10.0, 
             diameter: 52.5e-3,
             roughness: 0.05e-3,
