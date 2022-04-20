@@ -8,6 +8,7 @@ pub mod nodes;
 pub mod edge;
 pub mod edges;
 pub mod graph;
+pub mod solver;
 pub mod utility;
 
 //Re-exports

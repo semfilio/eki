@@ -42,11 +42,19 @@ impl Edge {
         }
     }
 
-    pub fn mass_flow(&mut self) -> &mut f64 {
+    pub fn mass_flow(&mut self) -> &mut Vec<f64> {
         match self {
             Edge::Pipe(edge) => &mut edge.mass_flow,
             Edge::Valve(edge) => &mut edge.mass_flow,
         }
+    }
+
+    pub fn steady_mass_flow(&mut self) -> &mut f64 {
+        &mut self.mass_flow()[0]
+    }
+
+    pub fn current_mass_flow(&mut self) -> f64 {
+        *self.mass_flow().last().unwrap()
     }
 
     pub fn length(&mut self) -> Option<&mut f64> {
@@ -91,10 +99,21 @@ impl Edge {
         }
     }
 
-    pub fn open_percent(&mut self) -> Option<&mut f64> {
+    pub fn open_percent(&mut self) -> Option<&mut Vec<f64>> {
         match self {
             Edge::Pipe(_edge) => None,
             Edge::Valve(edge) => Some(&mut edge.open_percent),
+        }
+    }
+
+    pub fn steady_open_percent(&mut self) -> &mut f64 {
+        &mut self.open_percent().unwrap()[0]
+    }
+
+    pub fn k_values(&mut self) -> Option<&mut Vec<(f64, f64)>> {
+        match self {
+            Edge::Pipe(_edge) => None,
+            Edge::Valve(edge) => Some(&mut edge.k),
         }
     }
 

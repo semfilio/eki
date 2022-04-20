@@ -1,7 +1,7 @@
 use eki::node::Node;
-use eki::nodes::{ pressure::Pressure, flow::Flow, connection::Connection };
+use eki::nodes::{ pressure::Pressure, flow::Flow };
 use eki::edge::Edge;
-use eki::edges::{ pipe::Pipe, valve::Valve };
+use eki::edges::{ pipe::Pipe };
 use eki::graph::Graph;
 use ohsl::Mat64;
 
