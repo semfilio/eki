@@ -8,12 +8,12 @@ use crate::utility;
 pub struct Pipe {
     pub from: Node,
     pub to: Node,
-    pub mass_flow: Vec<f64>,
-    pub length: f64,
-    pub diameter: f64,
-    pub roughness: f64,
-    pub thickness: f64,
-    pub youngs_modulus: f64,
+    pub mass_flow: Vec<f64>,        // [kg/s]
+    pub length: f64,                // [m]
+    pub diameter: f64,              // [m]
+    pub roughness: f64,             // [m]
+    pub thickness: f64,             // [m]
+    pub youngs_modulus: f64,        // [Pa]
 }
 
 impl Pipe {
@@ -27,6 +27,21 @@ impl Pipe {
             roughness: 0.05e-3,
             thickness: 0.005, // 5mm pipe
             youngs_modulus: 2.0e11, // Steel pipe
+        }
+    }
+
+    pub fn new_params(from: Node, to: Node, length: f64, diameter: f64, roughness: f64, 
+        thickness: f64, youngs_modulus: f64 ) -> Self 
+    {
+        Pipe { 
+            from, 
+            to, 
+            mass_flow: vec![ 0.0 ],
+            length, 
+            diameter,
+            roughness,
+            thickness,
+            youngs_modulus,
         }
     }
 

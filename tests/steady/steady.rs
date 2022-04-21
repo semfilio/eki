@@ -6,6 +6,8 @@ use eki::edges::{ pipe::Pipe, valve::Valve };
 use eki::graph::Graph;
 use eki::solver::{Solver, SolverType};
 
+mod three_reservoirs;
+
 #[test]
 fn default() {
     let mut solver = Solver::default();
@@ -48,14 +50,13 @@ fn reset() {
 #[test]
 fn single_pipe() {
     let mut graph = Graph::new();
-    let mut node_from = Node::Pressure( Pressure::new( 0 ) );
-    *node_from.steady_pressure() = 121325.0;
+    let node_from = Node::Pressure( Pressure::new_with_value( 0, 121325.0 ) );
     graph.add_node( node_from.clone() );
     let node_to = Node::Pressure( Pressure::new( 1 ) );
     graph.add_node( node_to.clone() );
     let edge = Edge::Pipe( Pipe::new( node_from, node_to ) );
     graph.add_edge( edge );
-    let fluid = Fluid::default();
+    let fluid = Fluid::new( 997.0, 1.1375e-6, 2.15e9 );
     let mut solver = Solver::default();
     let result = solver.solve_steady( &mut graph, &fluid, true );
     assert!( result.is_ok() && !result.is_err() );
@@ -69,14 +70,15 @@ fn single_pipe() {
 #[test]
 fn initial_guess() {
     let mut graph = Graph::new();
-    let mut node_from = Node::Pressure( Pressure::new( 0 ) );
-    *node_from.steady_pressure() = 121325.0;
+    let node_from = Node::Pressure( Pressure::new_with_value( 0, 121325.0 ) );
     graph.add_node( node_from.clone() );
+    
     let node_to = Node::Pressure( Pressure::new( 1 ) );
     graph.add_node( node_to.clone() );
+    
     let edge = Edge::Pipe( Pipe::new( node_from, node_to ) );
     graph.add_edge( edge );
-    let fluid = Fluid::default();
+    let fluid = Fluid::new( 997.0, 1.1375e-6, 2.15e9 );
     let mut solver = Solver::default();
     let create_guess = true;
     let result = solver.solve_steady( &mut graph, &fluid, create_guess );
@@ -111,8 +113,7 @@ fn initial_guess() {
 #[test]
 fn steady_valve() {
     let mut graph = Graph::new();
-    let mut node_from = Node::Pressure( Pressure::new( 0 ) );
-    *node_from.steady_pressure() = 111325.0;
+    let node_from = Node::Pressure( Pressure::new_with_value( 0, 111325.0 ) );
     graph.add_node( node_from.clone() );
     let node_to = Node::Pressure( Pressure::new( 1 ) );
     graph.add_node( node_to.clone() );
@@ -124,7 +125,7 @@ fn steady_valve() {
     ];
     *valve.steady_open_percent() = 0.5;
     graph.add_edge( valve );
-    let fluid = Fluid::default();
+    let fluid = Fluid::new( 997.0, 1.1375e-6, 2.15e9 );
     let mut solver = Solver::default();
     let result = solver.solve_steady( &mut graph, &fluid, true );
     assert!( result.is_ok() && !result.is_err() );

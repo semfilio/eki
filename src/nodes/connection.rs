@@ -22,4 +22,13 @@ impl Connection {
         }
     }
 
+    pub fn new_elevation( id: usize, elevation: f64 ) -> Self {
+        Connection {
+            id,
+            elevation,
+            pressure: vec![ 101325.0 ],
+            consumption: vec![ 0.0 ],
+        }
+    }
+
 }

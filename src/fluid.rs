@@ -6,19 +6,23 @@ pub struct Fluid {
 }
 
 impl Default for Fluid {
-    fn default() -> Self { // Assume the fluid is water
+    fn default() -> Self { // Assume the fluid is water at 15 degrees C & 1 bar
         Fluid {
-            rho: 997.0,
-            nu: 1.1375e-6,
+            rho: 999.1,
+            nu: 1.1385e-6,
             bulk: 2.15e9,
         }
     }
 }
 
 impl Fluid {
+    pub fn new(rho: f64, nu: f64, bulk: f64) -> Self {
+        Fluid { rho, nu, bulk }
+    }
+
     pub fn reset_parameters(&mut self) {
-        self.rho = 997.0;
-        self.nu = 1.1375e-6;
+        self.rho = 999.1;
+        self.nu = 1.1385e-6;
         self.bulk = 2.15e9;
     }
 
