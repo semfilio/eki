@@ -9,7 +9,7 @@ and other components.
     - [ ] Single pipe (look at Reynolds number etc)
     - [ ] Valve 
 - [ ] Transient tests + validation
-    - [ ] Streeter & Wylie example
+    - [x] Streeter & Wylie example
     - [ ] Wood & Lingreddy example ?
 - [ ] Use in PiNTS
 - [ ] Use in fluidity
