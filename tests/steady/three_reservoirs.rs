@@ -8,7 +8,7 @@ use eki::solver::Solver;
 
 #[test]
 fn solve() {
-    let fluid = Fluid::new( 999.7, 1.3063e-6, 2.15e9 );
+    let fluid = Fluid::new( 999.7, 1.3063e-6, 2.15e9 ); // Water @ 10 degrees C
     let mut graph = Graph::new();
 
     let node1 = Node::Pressure( Pressure::new_elevation( 1, 85.0 ) );
@@ -40,7 +40,6 @@ fn solve() {
     let mut solver = Solver::default(); 
     let result = solver.solve_steady( &mut graph, &fluid, true );
     assert!( result.is_ok() && !result.is_err() );
-
 
     // Flow rate from highest reservoir
     let volume_flow = *graph.edges()[1].steady_mass_flow() / fluid.density();

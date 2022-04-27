@@ -99,6 +99,7 @@ impl Edge {
         }
     }
 
+    // 1.0 = 100% open
     pub fn open_percent(&mut self) -> Option<&mut Vec<f64>> {
         match self {
             Edge::Pipe(_edge) => None,
@@ -117,10 +118,10 @@ impl Edge {
         }
     }
 
-    pub fn pressure_loss_coefficient(&self) -> Option<f64> {
+    pub fn pressure_loss_coefficient(&self, step: usize ) -> Option<f64> {
         match self {
             Edge::Pipe(_edge) => None,
-            Edge::Valve(edge) => Some( edge.k() ),
+            Edge::Valve(edge) => Some( edge.k( step ) ),
         }
     }
 
@@ -131,23 +132,23 @@ impl Edge {
         }
     }
 
-    pub fn r_drdq(&self, flow_rate: f64, nu: f64, g: f64 ) -> (f64, f64) {
-        let r = self.resistance( flow_rate, nu, g );
+    pub fn r_drdq(&self, flow_rate: f64, nu: f64, g: f64, step: usize ) -> (f64, f64) {
+        let r = self.resistance( flow_rate, nu, g, step );
         if flow_rate == 0.0 {
             ( r, 0.0 )
         } else {
             let delta = 1.0e-8;
             let flow_rate_plus = flow_rate + delta;
-            let r_plus = self.resistance( flow_rate_plus, nu, g );
+            let r_plus = self.resistance( flow_rate_plus, nu, g, step );
             let drdq = ( r_plus - r ) / delta;
             ( r, drdq )
         }
     }
 
-    pub fn resistance(&self, flow_rate: f64, nu: f64, g: f64 ) -> f64 {
+    pub fn resistance(&self, flow_rate: f64, nu: f64, g: f64, step: usize ) -> f64 {
         match self {
             Edge::Pipe(edge) => edge.resistance( flow_rate, nu, g ),
-            Edge::Valve(edge) => edge.resistance( flow_rate, nu, g ),
+            Edge::Valve(edge) => edge.resistance( flow_rate, nu, g, step ),
         }
     }
 

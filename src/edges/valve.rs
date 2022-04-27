@@ -40,8 +40,8 @@ impl Valve {
         }
     }
 
-    pub fn k(&self) -> f64 {
-        self.interpolate_k( self.open_percent[0] )
+    pub fn k(&self, step: usize ) -> f64 {
+        self.interpolate_k( self.open_percent[step] )
     }
 
     pub fn interpolate_k(&self, open_percent: f64 ) -> f64 {
@@ -88,12 +88,12 @@ impl Valve {
     }
 
     //TODO should get k at time step for transient solve
-    pub fn resistance(&self, flow_rate: f64, _nu: f64, g: f64 ) -> f64 {
-        - self.k() * flow_rate * flow_rate.abs() / ( 2. * g * self.area() * self.area()  )
+    pub fn resistance(&self, flow_rate: f64, _nu: f64, g: f64, step: usize ) -> f64 {
+        - self.k( step ) * flow_rate * flow_rate.abs() / ( 2. * g * self.area() * self.area()  )
     }
 
     pub fn k_laminar(&self, nu: f64 ) -> f64 {
-        2. * 9.806 * self.area() * self.area() / ( self.k() * 10.0 * nu )
+        2. * 9.806 * self.area() * self.area() / ( self.k( 0 ) * 10.0 * nu )
     }
 
     pub fn darcy_approx(&self, head_loss: f64, g: f64 ) -> f64 {

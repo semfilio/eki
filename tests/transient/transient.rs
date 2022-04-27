@@ -6,6 +6,8 @@ use eki::edges::{ pipe::Pipe };
 use eki::graph::Graph;
 use eki::solver::{Solver, SolverType};
 
+mod streeter_and_wylie;
+
 #[test]
 fn initialise() {
     let mut solver = Solver::default();
