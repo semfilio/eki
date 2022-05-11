@@ -7,6 +7,7 @@ use eki::graph::Graph;
 use eki::solver::{Solver, SolverType};
 
 mod three_reservoirs;
+mod pipe;
 
 #[test]
 fn default() {
