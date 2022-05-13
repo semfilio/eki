@@ -8,6 +8,7 @@ use eki::solver::{Solver, SolverType};
 
 mod three_reservoirs;
 mod pipe;
+mod pump;
 
 #[test]
 fn default() {

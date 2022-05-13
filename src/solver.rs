@@ -126,6 +126,8 @@ impl Solver {
         let ( mut q_guess, mut h_guess ): ( ohsl::Vec64, ohsl::Vec64 );
         if create_guess {
             ( q_guess, h_guess ) = utility::laminar_guess( network, fluid, self.g );
+            println!( "q_guess = {}", q_guess );
+            println!( "h_guess = {}", h_guess );
         } else {
             ( q_guess, h_guess ) = network.steady_solution_qh( fluid.density(), self.g );
         }
@@ -172,7 +174,10 @@ impl Solver {
             }
 
             let correction = mat.solve_basic( b.clone() );
+            //println!( "q_guess = {}", q_guess );
+            //println!( "h_guess = {}", h_guess );
             utility::update_solution( &mut q_guess, &mut h_guess, &correction );
+            
             max_residual = correction.norm_inf();
             iter += 1;
         }

@@ -31,10 +31,10 @@ impl Valve {
                 (0.222, 160.),
                 (0.333, 60.),
                 (0.444, 23.),
-                (0.555, 7.9),
-                (0.666, 3.),
-                (0.777, 1.4),
-                (0.888, 0.5),
+                (0.556, 7.9),
+                (0.667, 3.),
+                (0.778, 1.4),
+                (0.889, 0.5),
                 (1.000, 0.25),
             ],
         }
@@ -87,19 +87,19 @@ impl Valve {
         a.sqrt()
     }
 
-    //TODO should get k at time step for transient solve
     pub fn resistance(&self, flow_rate: f64, _nu: f64, g: f64, step: usize ) -> f64 {
         - self.k( step ) * flow_rate * flow_rate.abs() / ( 2. * g * self.area() * self.area()  )
     }
 
     pub fn k_laminar(&self, nu: f64 ) -> f64 {
-        2. * 9.806 * self.area() * self.area() / ( self.k( 0 ) * 10.0 * nu )
+        let f = 0.1; // assumed friction factor for initial guess
+        let equivalent_length = self.k( 0 ) * self.diameter / f;
+        PI * 9.806 * self.diameter.powi( 4 ) / ( 128.0 * equivalent_length * nu )
     }
 
     pub fn darcy_approx(&self, head_loss: f64, g: f64 ) -> f64 {
-        let f = 0.1;        // assumed friction factor for initial guess
         let a = self.area();
-        let result = 2.0 * g * self.diameter * a * a / ( f * 10.0 * head_loss.abs() );
+        let result = 2.0 * g * a * a / ( self.k( 0 ) * head_loss.abs() );
         result.sqrt()
     }
 }

@@ -25,7 +25,7 @@ impl Pipe {
             length: 10.0, 
             diameter: 52.5e-3,
             roughness: 0.05e-3,
-            thickness: 0.005, // 5mm pipe
+            thickness: 5.0e-3, // 5mm pipe
             youngs_modulus: 2.0e11, // Steel pipe
         }
     }
