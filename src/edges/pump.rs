@@ -57,11 +57,11 @@ impl Pump {
     pub fn resistance(&self, flow_rate: f64, _nu: f64, _g: f64 ) -> f64 {
         //self.a[0] + self.a[1] * flow_rate + self.a[2] * flow_rate * flow_rate.abs()
         //println!( "flow_rate = {}", flow_rate );
-        let r = self.interpolate_data( flow_rate );
+        //let r = self.interpolate_data( flow_rate );
         //println!("r = {}", r );
-        r
+        //r
         
-        //self.interpolate_data( flow_rate )
+        self.interpolate_data( flow_rate )
     }
 
     //TODO interpolation utility function
@@ -118,15 +118,15 @@ impl Pump {
 
     //TODO ???
     pub fn darcy_approx(&self, head_loss: f64, g: f64 ) -> f64 {
-        let f = 0.1;        // assumed friction factor for initial guess
+        /*let f = 0.1;        // assumed friction factor for initial guess
         let a = self.area();
         let result = 2.0 * g * self.diameter * a * a / ( f * 1.0 * head_loss.abs() );
-        result.sqrt()
+        result.sqrt()*/
         //println!( "head_loss = {}", head_loss );
-        //- self.interpolate_head( head_loss.abs() )
+        - self.interpolate_head( head_loss.abs() )
     }
 
-    /*pub fn interpolate_head(&self, head_loss: f64 ) -> f64 {
+    pub fn interpolate_head(&self, head_loss: f64 ) -> f64 {
         let mut xlower = self.head_data[0].1;
         let mut xupper = self.head_data[1].1;
 
@@ -153,6 +153,6 @@ impl Pump {
             let y = yupper + m * (head_loss - xupper);
             y
         }
-    }*/
+    }
 
 }

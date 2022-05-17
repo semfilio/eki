@@ -4,7 +4,6 @@ and other components.
 
 ## TODO
 
-- [ ] Rewrite laminar guess code for general resistances R(Q) 
 - [ ] Steady tests ( Drive / Flite Software Shared Docs / FluidFlow QA and Examples / QA Incompressible  ) -> key examples
     - [x] Three reservoir problem
     - [x] Single pipe (look at Reynolds number etc)

@@ -151,7 +151,7 @@ impl Edge {
 
     pub fn r_drdq(&self, flow_rate: f64, nu: f64, g: f64, step: usize ) -> (f64, f64) {
         let r = self.resistance( flow_rate, nu, g, step );
-        if flow_rate == 0.0 {
+        /*if flow_rate == 0.0 {
             ( r, 0.0 )
         } else {
             let delta = 1.0e-8;
@@ -159,7 +159,15 @@ impl Edge {
             let r_plus = self.resistance( flow_rate_plus, nu, g, step );
             let drdq = ( r_plus - r ) / delta;
             ( r, drdq )
-        }
+        }*/
+        // Central difference instead? 
+        let delta = 1.0e-8;
+        let q_plus = flow_rate + delta;
+        let r_plus = self.resistance( q_plus, nu, g, step );
+        let q_minus = flow_rate - delta;
+        let r_minus = self.resistance( q_minus, nu, g, step );
+        let drdq = ( r_plus - r_minus ) / ( 2.0 * delta );
+        ( r, drdq )
     }
 
     pub fn resistance(&self, flow_rate: f64, nu: f64, g: f64, step: usize ) -> f64 {

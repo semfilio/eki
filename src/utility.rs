@@ -35,6 +35,72 @@ pub fn update_solution( qg: &mut Vec64, hg: &mut Vec64, correction: &Vec64 ) {
     }
 }
 
+/*pub fn laminar_guess( network: &mut Graph, fluid: &Fluid, g: f64 ) -> (Vec64, Vec64) {
+    let nu: f64 = fluid.kinematic_viscosity();
+    let (n, m) = ( network.num_nodes(), network.num_edges() );
+    let size = n + m;
+
+    let k = network.k_matrix();
+    let kt = network.incidence_matrix();
+
+    let mut b = Vec64::new( size, 0.0 );
+    let mut mat = Mat64::new( size, size, 0.0 );
+
+    let mut q_rand = Vec64::random( m );
+    for j in 0..m {
+        q_rand[j] *= 0.01;
+    }
+
+    // Continuity equation at each node
+    let mut continuity_residual = network.steady_consumption_q( fluid.density() );
+    continuity_residual -= kt.clone() * q_rand.clone();
+    for i in 0..n {
+        for j in 0..m {
+            mat[i][j] = kt[i][j];
+        }
+        b[i] = continuity_residual[i];
+    }
+    // Fill the resistance Jacobian matrix in bottom left corner
+    //let q_zero = Vec64::new( m, 0.05 );
+    for j in 0..m {
+        let ( r, drdq ) = network.edges[j].r_drdq( q_rand[j], nu, g, 0 );
+        //println!( "r = {}", r );
+        //println!( "drdq = {}", drdq );
+        mat[n + j][j] = -drdq;
+        b[n + j] = r;
+    }
+    // Fill the K matrix in bottom right corner
+    for i in 0..m {
+        for j in 0..n {
+            mat[n+i][m+j] = - k[i][j];
+        }
+    }
+    // Insert boundary conditions 
+    for i in 0..n {
+        if network.nodes[i].is_known_pressure() {
+            // Clear row
+            for k in 0..n+m {
+                mat[i][k] = 0.0;
+                b[i] = 0.0;
+            }
+            mat[i][m+i] = 1.0;
+            let head = network.nodes[i].steady_head( g, fluid.density() );
+            b[i] = head;
+        }
+    }
+
+    //println!("mat = {}", mat);
+    //println!("b = {}", b);
+    let correction = mat.solve_basic( b.clone() );
+
+    let mut q_laminar = Vec64::new( m, 0.0 );
+    let mut h_laminar = Vec64::new( n, 0.0 );
+
+    update_solution( &mut q_laminar, &mut h_laminar, &correction );
+
+    ( q_laminar, h_laminar )
+}*/
+
 pub fn laminar_guess( net: &Graph, fluid: &Fluid, g: f64 ) -> (Vec64, Vec64) {
     let ( num_nodes, numel ) = ( net.num_nodes(), net.num_edges() );
     let mut k_matrix = Mat64::new( num_nodes, num_nodes, 0.0 );
