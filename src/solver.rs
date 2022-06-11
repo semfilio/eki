@@ -93,6 +93,10 @@ impl Solver {
         &mut self.g
     }
 
+    pub fn gravity(&self) -> f64 {
+        self.g
+    }
+
     pub fn solver_type(&mut self) -> &mut SolverType {
         &mut self.solver_type
     }
@@ -122,6 +126,8 @@ impl Solver {
         let ( mut q_guess, mut h_guess ): ( ohsl::Vec64, ohsl::Vec64 );
         if create_guess {
             ( q_guess, h_guess ) = utility::laminar_guess( network, fluid, self.g );
+            println!( "q_guess = {}", q_guess );
+            println!( "h_guess = {}", h_guess );
         } else {
             ( q_guess, h_guess ) = network.steady_solution_qh( fluid.density(), self.g );
         }
@@ -143,7 +149,7 @@ impl Solver {
             // Fill the resistance Jacobian matrix in bottom left corner
             let khg = k.clone() * h_guess.clone();
             for j in 0..m {
-                let ( r, drdq ) = network.edges[j].r_drdq( q_guess[j], nu, self.g );
+                let ( r, drdq ) = network.edges[j].r_drdq( q_guess[j], nu, self.g, 0 );
                 mat[n + j][j] = -drdq;
                 b[n + j] = r + khg[j];
             }
@@ -167,8 +173,14 @@ impl Solver {
                 }
             }
 
+            //println!( "mat = {}", mat );
             let correction = mat.solve_basic( b.clone() );
+
+            //println!( "q_guess = {}", q_guess );
+            //println!( "h_guess = {}", h_guess );
+            //println!( "correction = {}", correction );
             utility::update_solution( &mut q_guess, &mut h_guess, &correction );
+            
             max_residual = correction.norm_inf();
             iter += 1;
         }
@@ -185,6 +197,7 @@ impl Solver {
 
     pub fn time_step(&mut self, network: &mut Graph, fluid: &Fluid, dt: f64 ) -> Result<usize,f64> {
         let step = self.tnodes.len() - 1;
+        println!("Time step {}", step);
         let ( qn, hn ) = network.current_solution_qh( fluid.density(), self.g, step ); 
         let ( mut qg, mut hg ) = ( qn.clone(), hn.clone() );
         
@@ -230,7 +243,7 @@ impl Solver {
             // Fill the resistance Jacobian matrix in bottom left corner
             let khbar = k.clone() * hbar.clone();
             for j in 0..m {
-                let ( r, drdq ) = network.edges[j].r_drdq( qbar[j], fluid.kinematic_viscosity(), self.g );
+                let ( r, drdq ) = network.edges[j].r_drdq( qbar[j], fluid.kinematic_viscosity(), self.g, step + 1 );
                 mat[n + j][j] = invdt * b_diag[j] - drdq;
                 b[n + j] = r - invdt * b_diag[j] * ( qg[j] - qn[j] ) + khbar[j];
             }
@@ -265,6 +278,9 @@ impl Solver {
         if iter < self.max_iter && !max_residual.is_nan() {
             let t = *self.tnodes.last().unwrap();
             self.tnodes.push( t + dt );
+            println!("qg = {:?}", qg);
+            println!("hg = {:?}", hg);
+            println!("iter = {}", iter);
             network.push_transient_solution( qg, hg, fluid, *self.g() );
             Ok( iter )
         } else {

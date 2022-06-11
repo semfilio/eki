@@ -20,5 +20,23 @@ impl Pressure {
             pressure: vec![ 101325.0 ],
             consumption: vec![ 0.0 ],
         }
-    } 
+    }
+
+    pub fn new_with_value( id: usize, value: f64 ) -> Self {
+        Pressure {
+            id,
+            elevation: 0.0,
+            pressure: vec![ value ],
+            consumption: vec![ 0.0 ],
+        }
+    }
+
+    pub fn new_elevation( id: usize, elevation: f64 ) -> Self {
+        Pressure {
+            id,
+            elevation,
+            pressure: vec![ 101325.0 ],
+            consumption: vec![ 0.0 ],
+        }
+    }
 }

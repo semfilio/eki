@@ -90,3 +90,8 @@ pub fn laminar_guess( net: &Graph, fluid: &Fluid, g: f64 ) -> (Vec64, Vec64) {
     }
     ( flow_rate, head )
 }
+
+pub fn relative_error( x: f64, x_approx: f64 ) -> f64 {
+    let rel = 1.0 - ( x_approx / x );
+    rel.abs()
+}

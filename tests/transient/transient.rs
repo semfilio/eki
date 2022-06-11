@@ -6,6 +6,8 @@ use eki::edges::{ pipe::Pipe };
 use eki::graph::Graph;
 use eki::solver::{Solver, SolverType};
 
+mod streeter_and_wylie;
+
 #[test]
 fn initialise() {
     let mut solver = Solver::default();
@@ -40,7 +42,7 @@ fn time_step() {
     let edge = Edge::Pipe( Pipe::new( connection, node_to.clone() ) );
     network.add_edge( edge );
 
-    let fluid = Fluid::default();
+    let fluid = Fluid::new( 997.0, 1.1375e-6, 2.15e9 );
     let g = *solver.g();
     let rho = fluid.density();
     let _result = solver.solve_steady( &mut network, &fluid, true );
