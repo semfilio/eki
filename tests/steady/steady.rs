@@ -2,7 +2,7 @@ use eki::fluid::Fluid;
 use eki::node::Node;
 use eki::nodes::{ pressure::Pressure };
 use eki::edge::Edge;
-use eki::edges::{ pipe::Pipe, valve::Valve };
+use eki::edges::{ pipe::Pipe };
 use eki::graph::Graph;
 use eki::solver::{Solver, SolverType};
 
