@@ -173,9 +173,12 @@ impl Solver {
                 }
             }
 
+            //println!( "mat = {}", mat );
             let correction = mat.solve_basic( b.clone() );
+
             //println!( "q_guess = {}", q_guess );
             //println!( "h_guess = {}", h_guess );
+            //println!( "correction = {}", correction );
             utility::update_solution( &mut q_guess, &mut h_guess, &correction );
             
             max_residual = correction.norm_inf();

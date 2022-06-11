@@ -21,6 +21,7 @@ fn basic_pump() {
 
     let pump = Edge::Pump( Pump::new_data( node_from, node_to, 
         vec![ 
+            // (Q, dH)
             (0.00, 46.00),
             (13.32 / ( 60.0 * 60.0 ), 20.00),
             (36.80 / ( 60.0 * 60.0 ), 0.00)
@@ -34,10 +35,78 @@ fn basic_pump() {
         println!( "residual = {}", residual );
     } 
     assert!( result.is_ok() && !result.is_err() );
-
     let volume_flow = *graph.edges()[0].steady_mass_flow() / fluid.density();
     assert!( volume_flow - ( 13.32 / ( 60.0 * 60.0 ) ) < 1.0e-6 );
+}
 
+#[test]
+fn pump_and_pipe() {
+    let fluid = Fluid::default();
+    let mut graph = Graph::new();
+
+    let node_from = Node::Pressure( Pressure::new( 0 ) );
+    graph.add_node( node_from.clone() );
+
+    let connection = Node::Connection( Connection::new( 1 ) );
+    graph.add_node( connection.clone() );
+
+    let node_to = Node::Pressure( Pressure::new_elevation( 2, 20.0 ) );
+    graph.add_node( node_to.clone() );
+
+    let pump = Edge::Pump( Pump::new_data( node_from, connection.clone(), 
+        vec![ 
+            (0.00 / ( 60.0 * 60.0 ), 46.00),
+            (1.14 / ( 60.0 * 60.0 ), 45.98),
+            (2.31 / ( 60.0 * 60.0 ), 45.89),
+            (3.80 / ( 60.0 * 60.0 ), 45.76),
+            (5.79 / ( 60.0 * 60.0 ), 45.50),
+            (7.13 / ( 60.0 * 60.0 ), 45.19),
+            (8.95 / ( 60.0 * 60.0 ), 44.62),
+            (13.32 / ( 60.0 * 60.0 ), 42.59),
+            (15.32 / ( 60.0 * 60.0 ), 41.36),
+            (17.83 / ( 60.0 * 60.0 ), 39.38),
+            (21.00 / ( 60.0 * 60.0 ), 36.50),
+            (23.70 / ( 60.0 * 60.0 ), 33.70),
+            (26.30 / ( 60.0 * 60.0 ), 30.60),
+            (30.00 / ( 60.0 * 60.0 ), 23.00),
+            (34.00 / ( 60.0 * 60.0 ), 11.00),
+            (36.80 / ( 60.0 * 60.0 ), 0.00)
+        ]
+    ));
+    graph.add_edge( pump );
+
+    let mut pipe = Edge::Pipe( Pipe::new( connection, node_to ) );
+    *pipe.length().unwrap() = 100.0;
+    graph.add_edge( pipe );
+
+    let mut solver = Solver::default();
+    let result = solver.solve_steady( &mut graph, &fluid, true );
+    if let Err(residual) = result {
+        println!( "residual = {}", residual );
+    } 
+    assert!( result.is_ok() && !result.is_err() );
+
+    let volume_flow = *graph.edges()[0].steady_mass_flow() / fluid.density();
+    assert_eq!( volume_flow, 0.005979870051971544 );            //TODO get value from FD
+    let rho_g = fluid.density() * solver.gravity();
+    let h_from = graph.nodes()[0].steady_head( solver.gravity(), fluid.density() );
+    assert_eq!( h_from, (101325.0 / rho_g) );
+    let p_connection = *graph.nodes()[1].steady_pressure();
+    let h_connection = graph.nodes()[1].steady_head( solver.gravity(), fluid.density() );
+    assert_eq!( h_connection, p_connection / rho_g );
+    assert_eq!( p_connection, 453585.47688527644 );             //TODO get value from FD
+    let h_to = graph.nodes()[2].steady_head( solver.gravity(), fluid.density() );
+    assert_eq!( h_to, (101325.0 / rho_g) + 20.0 );
+}
+
+#[test]
+fn pipe_pump_pipe() {
+
+}
+
+#[test]
+fn pipe_pump_valve_pipe() {
+    
 }
 
 //TODO more pump testing

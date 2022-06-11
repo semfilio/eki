@@ -8,6 +8,7 @@ use eki::solver::{Solver, SolverType};
 
 mod three_reservoirs;
 mod pipe;
+mod valve;
 mod pump;
 
 #[test]
@@ -110,27 +111,4 @@ fn initial_guess() {
     }
     let mass_flow = *graph.edges()[0].steady_mass_flow();
     assert!( ( mass_flow - 6.6243271 ).abs() < 1.0e-6 );
-}
-
-#[test]
-fn steady_valve() {
-    let mut graph = Graph::new();
-    let node_from = Node::Pressure( Pressure::new_with_value( 0, 111325.0 ) );
-    graph.add_node( node_from.clone() );
-    let node_to = Node::Pressure( Pressure::new( 1 ) );
-    graph.add_node( node_to.clone() );
-    let mut valve = Edge::Valve( Valve::new( node_from, node_to ) );
-    *valve.k_values().unwrap() = vec![ 
-        (0.0, 1.0e16),
-        (0.5, 7.0),
-        (1.0, 0.25),
-    ];
-    *valve.steady_open_percent() = 0.5;
-    graph.add_edge( valve );
-    let fluid = Fluid::new( 997.0, 1.1375e-6, 2.15e9 );
-    let mut solver = Solver::default();
-    let result = solver.solve_steady( &mut graph, &fluid, true );
-    assert!( result.is_ok() && !result.is_err() );
-    let mass_flow = (*graph.edges()[0].mass_flow())[0];
-    assert!( ( mass_flow - 3.6536088 ).abs() < 1.0e-6 );
 }

@@ -117,7 +117,7 @@ impl Pump {
     }
 
     //TODO ???
-    pub fn darcy_approx(&self, head_loss: f64, g: f64 ) -> f64 {
+    pub fn darcy_approx(&self, head_loss: f64, _g: f64 ) -> f64 {
         /*let f = 0.1;        // assumed friction factor for initial guess
         let a = self.area();
         let result = 2.0 * g * self.diameter * a * a / ( f * 1.0 * head_loss.abs() );
