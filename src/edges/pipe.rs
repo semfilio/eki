@@ -14,6 +14,8 @@ pub struct Pipe {
     pub roughness: f64,             // [m]
     pub thickness: f64,             // [m]
     pub youngs_modulus: f64,        // [Pa]
+    pub width: f32,
+    pub selected: bool,
 }
 
 impl Pipe {
@@ -27,6 +29,8 @@ impl Pipe {
             roughness: 0.05e-3,
             thickness: 5.0e-3, // 5mm pipe
             youngs_modulus: 2.0e11, // Steel pipe
+            width: 5.0, 
+            selected: false,
         }
     }
 
@@ -42,6 +46,8 @@ impl Pipe {
             roughness,
             thickness,
             youngs_modulus,
+            width: 5.0, 
+            selected: false,
         }
     }
 
@@ -88,4 +94,8 @@ impl Pipe {
         result.sqrt()
     }
 
+    pub fn create_transient_values(&mut self, tnodes: &[f64]) {
+        let mass_flow = vec![ self.mass_flow[0]; tnodes.len() ];
+        self.mass_flow = mass_flow;
+    } 
 }
