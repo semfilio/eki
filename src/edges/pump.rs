@@ -13,6 +13,7 @@ pub struct Pump {
     pub diameter: f64,          // TODO ??? inlet/outlet diameter ???
     pub thickness: f64,         // TODO ???
     pub youngs_modulus: f64,    // TODO ???
+    pub selected: bool,
 }
 
 impl Pump {
@@ -37,7 +38,7 @@ impl Pump {
             diameter: 1.0,                  // TODO ??? 
             thickness: 1.0,                 // TODO ???
             youngs_modulus: 1.0,            // TODO ???
-
+            selected: false,
         }
     }
 
@@ -50,7 +51,7 @@ impl Pump {
             diameter: 1.0,                  // TODO ??? 
             thickness: 1.0,                 // TODO ???
             youngs_modulus: 1.0,            // TODO ???
-
+            selected: false,
         }
     }
 

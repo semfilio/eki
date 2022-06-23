@@ -5,6 +5,8 @@ use crate::edges::{
     pump::Pump,
 };
 use crate::fluid::Fluid;
+use crate::events::TransientEvent;
+use crate::utility;
 
 #[derive(Clone, PartialEq, Debug, serde::Deserialize, serde::Serialize)]
 pub enum Edge {
@@ -62,6 +64,14 @@ impl Edge {
 
     pub fn current_mass_flow(&mut self) -> f64 {
         *self.mass_flow().last().unwrap()
+    }
+
+    pub fn max_mass_flow(&mut self) -> f64 {
+        utility::max_value( self.mass_flow() )
+    }
+
+    pub fn min_mass_flow(&mut self) -> f64 {
+        utility::min_value( self.mass_flow() )
     }
 
     pub fn length(&mut self) -> Option<&mut f64> {
@@ -194,10 +204,61 @@ impl Edge {
         }
     }
 
-    /*pub fn update_from(&mut self, node: Node ) {
+    pub fn create_transient_values(&mut self, tnodes: &[f64] ) {
+        match self {
+            Edge::Pipe(edge) => edge.create_transient_values( tnodes ),
+            Edge::Valve(edge) => edge.create_transient_values( tnodes ),
+            Edge::Pump(_edge) => {}, //TODO
+        }
+    }
+
+    pub fn events(&mut self) -> Option<&mut Vec<TransientEvent>> {
+        match self {
+            Edge::Pipe(_edge) => None,
+            Edge::Valve(edge) => Some(&mut edge.events),
+            Edge::Pump(_edge) => None, //TODO
+        }
+    }
+
+    pub fn add_event(&mut self, event: TransientEvent) {
+        match self {
+            Edge::Pipe(_edge) => {},
+            Edge::Valve(edge) => edge.events.push(event),
+            Edge::Pump(_edge) => {}, //TODO
+        }
+    }
+
+    pub fn pop_event(&mut self) -> Option<TransientEvent> {
+        match self {
+            Edge::Pipe(_edge) => None,
+            Edge::Valve(edge) => edge.events.pop(),
+            Edge::Pump(_edge) => None, //TODO
+        }
+    }
+
+    //TODO these can be written better
+
+    pub fn selected( &mut self, select: bool ) {
+        match self {
+            Edge::Pipe(edge) => edge.selected = select,
+            Edge::Valve(edge) => edge.selected = select,
+            Edge::Pump(edge) => edge.selected = select,
+        }
+    }
+
+    pub fn is_selected(&self) -> bool {
+        match self {
+            Edge::Pipe(edge) => edge.selected,
+            Edge::Valve(edge) => edge.selected,
+            Edge::Pump(edge) => edge.selected,
+        }
+    }
+
+    pub fn update_from(&mut self, node: Node ) {
         match self {
             Edge::Pipe(edge) => edge.from = node,
             Edge::Valve(edge) => edge.from = node,
+            Edge::Pump(edge) => edge.from = node,
         }
     }
 
@@ -205,6 +266,7 @@ impl Edge {
         match self {
             Edge::Pipe(edge) => edge.to = node,
             Edge::Valve(edge) => edge.to = node,
+            Edge::Pump(edge) => edge.to = node,
         }
-    }*/
+    }
 }
