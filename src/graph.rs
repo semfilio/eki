@@ -36,19 +36,6 @@ impl Graph {
         &mut self.edges
     }
 
-    /*pub fn count_links(&self, node: Node) -> usize {
-        let mut count = 0;
-        for edge in self.edges.clone() {
-            if edge.from().id() == node.id() {
-                count += 1;
-            }
-            if edge.to().id() == node.id() {
-                count += 1;
-            }
-        }
-        count
-    }*/
-
     pub fn num_nodes(&self) -> usize {
         self.nodes.len()
     }
@@ -190,7 +177,7 @@ impl Graph {
         consumption
     }
 
-    // Return the vector of nodal consumptions and specified time step (transient) [mdot]
+    // Return the vector of nodal consumptions at specified time step (transient) [mdot]
     pub fn consumption(&mut self, step: usize ) -> Vec64 {
         let n = self.num_nodes();
         let mut consumption = Vec64::new( n, 0.0 );
@@ -238,6 +225,27 @@ impl Graph {
         (q_guess, h_guess)
     }
 
+    // Initialise the transient solution using the steady solution
+    pub fn initialise_transient(&mut self, tnodes: Vec<f64> ) {
+        let n = tnodes.len();
+        for mut node in self.nodes() {
+            //let length = if let Some(pressure) = node.pressure() { pressure.len() } else { n };
+            let length = node.pressure().len();
+            if n != length {
+                node.create_transient_values( &tnodes );
+                self.update_node( node );
+            }
+        }
+        for mut edge in self.edges() {
+            //let length = if let Some(mass_flow) = edge.mass_flow() { mass_flow.len() } else { n };
+            let length = edge.mass_flow().len();
+            if n != length {
+                edge.create_transient_values( &tnodes );
+                self.update_edge( edge );
+            }
+        }
+    }
+
     // Return the current solution as two vectors
     pub fn current_solution_qh(&mut self, rho: f64, g: f64, step: usize ) -> (Vec64, Vec64) {
         let (m, n) = ( self.num_edges(), self.num_nodes() );
@@ -283,6 +291,20 @@ impl Graph {
     // TODO check doesn't already exist
     pub fn add_edge(&mut self, edge: Edge ) {
         self.edges.push( edge );
+    }
+
+    pub fn update_node(&mut self, node: Node ) {
+        let id = node.id();
+        let result = self.nodes.iter().position(|node| (*node).id() == id);
+        if let Some( index ) = result { self.nodes[ index ] = node; }
+    }
+
+    pub fn update_edge(&mut self, edge: Edge ) {
+        let from_id = edge.from().id();
+        let to_id = edge.to().id();
+        let result = self.edges.iter().position(|edge| 
+            (*edge).from().id() == from_id && (*edge).to().id() == to_id );
+        if let Some( index ) = result { self.edges[ index ] = edge; }
     }
 
 }
