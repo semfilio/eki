@@ -184,5 +184,21 @@ impl Node {
             Node::Hidden(node) => node.loc = Location::new( x, y ),
         }
     }
+
+    pub fn radius(&mut self, radius: f32 ) {
+        match self {
+            Node::Pressure(node) => node.r = radius,
+            Node::Flow(node) => node.r = radius,
+            Node::Connection(node) => node.r = radius,
+            Node::Hidden(node) => node.r = radius,
+        }
+    }
+
+    pub fn intersection(&self, theta: f32, from: bool, scaling: f32 ) -> (f32, f32) {
+        let factor = if from { 1.0 } else { -1.0 };
+        let x_inter = self.loc().x - factor * self.r() * theta.cos();
+        let y_inter = self.loc().y + factor * self.r() * theta.sin();
+        ( x_inter * scaling, y_inter * scaling )
+    }
  
 }
