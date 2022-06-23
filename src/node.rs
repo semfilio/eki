@@ -5,6 +5,8 @@ use crate::nodes::{
     hidden::Hidden,
 };
 use crate::location::Location;
+use crate::utility;
+use crate::events::TransientEvent;
 
 
 #[derive(Clone, PartialEq, Debug, serde::Deserialize, serde::Serialize)]
@@ -110,6 +112,50 @@ impl Node {
         let mut head = elevation;
         head += (*pressure) / (g * density) ;
         head
+    }
+
+    pub fn max_pressure(&mut self) -> f64 {
+        utility::max_value( self.pressure() )
+    }
+
+    pub fn min_pressure(&mut self) -> f64 {
+        utility::min_value( self.pressure() )
+    }
+
+    pub fn events(&mut self) -> Option<&mut Vec<TransientEvent>> {
+        match self {
+            Node::Pressure(node) => Some(&mut node.events),
+            Node::Flow(node) => Some(&mut node.events),
+            Node::Connection(_node) => None,
+            Node::Hidden(_node) => None,
+        }
+    }
+
+    pub fn add_event(&mut self, event: TransientEvent) {
+        match self {
+            Node::Pressure(node) => node.events.push(event),
+            Node::Flow(node) => node.events.push(event),
+            Node::Connection(_node) => (),
+            Node::Hidden(_node) => (),
+        }
+    }
+
+    pub fn pop_event(&mut self) -> Option<TransientEvent> {
+        match self {
+            Node::Pressure(node) => node.events.pop(),
+            Node::Flow(node) => node.events.pop(),
+            Node::Connection(_node) => None,
+            Node::Hidden(_node) => None,
+        }
+    }
+
+    pub fn create_transient_values(&mut self, tnodes: &[f64] ) {
+        match self {
+            Node::Pressure(node) => node.create_transient_values( tnodes ),
+            Node::Flow(node) => node.create_transient_values( tnodes ),
+            Node::Connection(node) => node.create_transient_values( tnodes ),
+            Node::Hidden(_node) => (),
+        }
     }
 
     pub fn update_id(&mut self, id: usize ) {

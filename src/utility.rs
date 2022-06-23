@@ -3,6 +3,16 @@ use crate::graph::Graph;
 use crate::fluid::Fluid;
 use crate::node::Node;
 
+pub fn max_value( values: &mut Vec<f64>) -> f64 {
+    let max = values.iter_mut().max_by(|a, b| a.partial_cmp(b).unwrap());
+    *max.unwrap()
+}
+
+pub fn min_value( values: &mut Vec<f64>) -> f64 {
+    let min = values.iter_mut().min_by(|a, b| a.partial_cmp(b).unwrap());
+    *min.unwrap()
+}
+
 pub fn friction_factor( relative: f64, reynolds: f64 ) -> f64 {
     if reynolds < 2100.0 {
         64.0 / reynolds 
