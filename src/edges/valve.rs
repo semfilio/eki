@@ -80,8 +80,6 @@ impl Valve {
         }
     }
 
-
-
     pub fn area(&self) -> f64 {
         PI * self.diameter * self.diameter / 4.0
     }
@@ -110,7 +108,8 @@ impl Valve {
         result.sqrt()
     }
 
-    pub fn create_transient_values(&mut self, tnodes: &[f64]) {
+    // TODO do we need this ???
+    /*pub fn create_transient_values(&mut self, tnodes: &[f64]) {
         let mass_flow = vec![ self.mass_flow[0]; tnodes.len() ];
         self.mass_flow = mass_flow;
         let mut open_percent = vec![ self.open_percent[0]; tnodes.len() ];
@@ -120,6 +119,22 @@ impl Valve {
             }
         }
         self.open_percent = open_percent;
-    } 
+    }*/ 
+
+    pub fn add_transient_value( &mut self, time: f64 ) {
+        let steady = *self.open_percent.last().unwrap();
+        for event in self.events.iter() {
+            self.open_percent.push( event.open_percent( time, steady ) );
+            /*if time >= event.time()  {
+                self.open_percent.push( event.open_percent( time, steady ) );
+            } else {
+                self.open_percent.push( *self.open_percent.last().unwrap() );
+            }*/
+        }
+        if self.events.len() == 0 {
+            self.open_percent.push( *self.open_percent.last().unwrap() );
+        }
+        //self.mass_flow.push( *self.mass_flow.last().unwrap() );
+    }
 
 }

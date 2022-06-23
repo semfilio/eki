@@ -59,6 +59,7 @@ impl Pressure {
         }
     }
 
+    //TODO do we need this ????
     pub fn create_transient_values(&mut self, tnodes: &[f64]) {
         let consumption = vec![ self.consumption[0]; tnodes.len() ];
         let mut pressure = vec![ self.pressure[0]; tnodes.len() ];
@@ -72,4 +73,18 @@ impl Pressure {
         self.pressure = pressure;
         self.consumption = consumption;
     } 
+
+    pub fn add_transient_value( &mut self, time: f64 ) {
+        for event in self.events.iter() {
+            if time >= event.time()  {
+                self.pressure.push( event.value() );
+            } else {
+                self.pressure.push( *self.pressure.last().unwrap() );
+            }
+        }
+        if self.events.len() == 0 {
+            self.pressure.push( *self.pressure.last().unwrap() );
+        }
+        self.consumption.push( self.consumption[0] );
+    }
 }

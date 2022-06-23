@@ -161,16 +161,6 @@ impl Edge {
 
     pub fn r_drdq(&self, flow_rate: f64, nu: f64, g: f64, step: usize ) -> (f64, f64) {
         let r = self.resistance( flow_rate, nu, g, step );
-        /*if flow_rate == 0.0 {
-            ( r, 0.0 )
-        } else {
-            let delta = 1.0e-8;
-            let flow_rate_plus = flow_rate + delta;
-            let r_plus = self.resistance( flow_rate_plus, nu, g, step );
-            let drdq = ( r_plus - r ) / delta;
-            ( r, drdq )
-        }*/
-        // Central difference instead? 
         let delta = 1.0e-8;
         let q_plus = flow_rate + delta;
         let r_plus = self.resistance( q_plus, nu, g, step );
@@ -204,10 +194,19 @@ impl Edge {
         }
     }
 
-    pub fn create_transient_values(&mut self, tnodes: &[f64] ) {
+    //TODO do we need this ???
+    /*pub fn create_transient_values(&mut self, tnodes: &[f64] ) {
         match self {
             Edge::Pipe(edge) => edge.create_transient_values( tnodes ),
             Edge::Valve(edge) => edge.create_transient_values( tnodes ),
+            Edge::Pump(_edge) => {}, //TODO
+        }
+    }*/
+
+    pub fn add_transient_value(&mut self, time: f64 ) {
+        match self {
+            Edge::Pipe(_edge) => {},
+            Edge::Valve(edge) => edge.add_transient_value( time ), 
             Edge::Pump(_edge) => {}, //TODO
         }
     }

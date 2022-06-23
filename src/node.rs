@@ -149,12 +149,22 @@ impl Node {
         }
     }
 
+    //TODO do we need this???
     pub fn create_transient_values(&mut self, tnodes: &[f64] ) {
         match self {
             Node::Pressure(node) => node.create_transient_values( tnodes ),
             Node::Flow(node) => node.create_transient_values( tnodes ),
             Node::Connection(node) => node.create_transient_values( tnodes ),
             Node::Hidden(_node) => (),
+        }
+    }
+
+    pub fn add_transient_value(&mut self, time: f64 ) {
+        match self {
+            Node::Pressure(node) => node.add_transient_value( time ),
+            Node::Flow(node) => node.add_transient_value( time ),
+            Node::Connection(_node) => {},
+            Node::Hidden(_node) => {},
         }
     }
 

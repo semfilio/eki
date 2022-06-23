@@ -200,14 +200,26 @@ impl Solver {
         println!("Time step {}", step);
         let ( qn, hn ) = network.current_solution_qh( fluid.density(), self.g, step ); 
         let ( mut qg, mut hg ) = ( qn.clone(), hn.clone() );
+        let dt = *self.dt();
+        let invdt = 1.0 / dt;
+
+        // Create extra values in vectors using events
+        let time = self.tnodes[step] + dt;
+        for node in network.mut_nodes() {
+            node.add_transient_value( time );
+        }
+        for edge in network.mut_edges() {
+            edge.add_transient_value( time );
+        }
+
+        
         
         let (n, m) = ( network.num_nodes(), network.num_edges() );
         let size = n + m;
         if size == 0 { return Err(1.0); }
         if m == 0 { return Err(1.0); }
         if !self.solved_steady { return Err(1.0); }
-        let dt = *self.dt();
-        let invdt = 1.0 / dt;
+        
 
         let kt = network.incidence_matrix();
         let k = network.k_matrix();
@@ -275,6 +287,8 @@ impl Solver {
             max_residual = correction.norm_inf();
             iter += 1;
         }
+        
+        
 
         if iter < self.max_iter && !max_residual.is_nan() {
             let t = *self.tnodes.last().unwrap();

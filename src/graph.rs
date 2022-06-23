@@ -225,8 +225,9 @@ impl Graph {
         (q_guess, h_guess)
     }
 
+    //TODO do we need this ????
     // Initialise the transient solution using the steady solution
-    pub fn initialise_transient(&mut self, tnodes: Vec<f64> ) {
+    /*pub fn initialise_transient(&mut self, tnodes: Vec<f64> ) {
         let n = tnodes.len();
         for mut node in self.nodes() {
             //let length = if let Some(pressure) = node.pressure() { pressure.len() } else { n };
@@ -244,7 +245,7 @@ impl Graph {
                 self.update_edge( edge );
             }
         }
-    }
+    }*/
 
     // Return the current solution as two vectors
     pub fn current_solution_qh(&mut self, rho: f64, g: f64, step: usize ) -> (Vec64, Vec64) {
