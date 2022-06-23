@@ -2,13 +2,17 @@ use crate::nodes::{
     pressure::Pressure,
     flow::Flow,
     connection::Connection,
+    hidden::Hidden,
 };
+use crate::location::Location;
+
 
 #[derive(Clone, PartialEq, Debug, serde::Deserialize, serde::Serialize)]
 pub enum Node {
     Pressure(Pressure),         // Assigned Boundary Pressure
     Flow(Flow),                 // Assigned Boundary Flow
     Connection(Connection),     // Connection Node
+    Hidden(Hidden),             // Hidden Node
 }
 
 impl Default for Node {
@@ -23,6 +27,7 @@ impl std::fmt::Display for Node {
             Node::Pressure(_node) => write!(f, "Pressure"),
             Node::Flow(_node) => write!(f, "Flow"),
             Node::Connection(_node) => write!(f, "Connection"),
+            Node::Hidden(_node) => write!(f, "Hidden"),
         }
     }
 }
@@ -34,6 +39,7 @@ impl Node {
             Node::Pressure(node) => node.id,
             Node::Flow(node) => node.id,
             Node::Connection(node) => node.id,
+            Node::Hidden(node) => node.id,
         }
     }
 
@@ -54,6 +60,7 @@ impl Node {
             Node::Pressure(node) => &mut node.elevation,
             Node::Flow(node) => &mut node.elevation,
             Node::Connection(node) => &mut node.elevation,
+            Node::Hidden(node) => &mut node.elevation, //TODO should be None
         }
     }
 
@@ -62,6 +69,7 @@ impl Node {
             Node::Pressure(node) => &mut node.pressure,
             Node::Flow(node) => &mut node.pressure,
             Node::Connection(node) => &mut node.pressure,
+            Node::Hidden(node) => &mut node.pressure,
         }
     }
 
@@ -78,6 +86,7 @@ impl Node {
             Node::Pressure(node) => &mut node.consumption,
             Node::Flow(node) => &mut node.consumption,
             Node::Connection(node) => &mut node.consumption,
+            Node::Hidden(node) => &mut node.consumption,
         }
     }
 
@@ -108,6 +117,7 @@ impl Node {
             Node::Pressure(node) => node.id = id,
             Node::Flow(node) => node.id = id,
             Node::Connection(node) => node.id = id,
+            Node::Hidden(node) => node.id = id,
         }
     }
 
@@ -116,6 +126,62 @@ impl Node {
             Node::Pressure(node) => node.pressure.push(value),
             Node::Flow(node) => node.consumption.push(value),
             Node::Connection(_node) => {},
+            Node::Hidden(_node) => {},
+        }
+    }
+
+    pub fn selected( &mut self, selected: bool ) {
+        match self {
+            Node::Pressure(node) => node.selected = selected,
+            Node::Flow(node) => node.selected = selected,
+            Node::Connection(node) => node.selected = selected,
+            Node::Hidden(node) => node.selected = selected,
+        }
+    }
+
+    pub fn is_selected( &self ) -> bool {
+        match self {
+            Node::Pressure(node) => node.selected,
+            Node::Flow(node) => node.selected,
+            Node::Connection(node) => node.selected,
+            Node::Hidden(node) => node.selected,
+        }
+    }
+
+    pub fn hidden(&self) -> bool {
+        matches!(self, Node::Hidden(_node))
+    }
+
+    pub fn loc(&self) -> Location {
+        match self {
+            Node::Pressure(node) => node.loc,
+            Node::Flow(node) => node.loc,
+            Node::Connection(node) => node.loc,
+            Node::Hidden(node) => node.loc,
+        }
+    }
+
+    pub fn r(&self) -> f32 {
+        match self {
+            Node::Pressure(node) => node.r,
+            Node::Flow(node) => node.r,
+            Node::Connection(node) => node.r,
+            Node::Hidden(node) => node.r,
+        }
+    }
+
+    pub fn inside( &self, x: f32, y: f32 ) -> bool {
+        let dx = self.loc().x - x;
+        let dy = self.loc().y - y;
+        (dx * dx + dy * dy).sqrt() <= self.r()
+    }
+
+    pub fn update_location(&mut self, x: f32, y: f32 ) {
+        match self {
+            Node::Pressure(node) => node.loc = Location::new( x, y ),
+            Node::Flow(node) => node.loc = Location::new( x, y ),
+            Node::Connection(node) => node.loc = Location::new( x, y ),
+            Node::Hidden(node) => node.loc = Location::new( x, y ),
         }
     }
  
