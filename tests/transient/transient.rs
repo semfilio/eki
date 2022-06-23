@@ -53,9 +53,9 @@ fn time_step() {
     assert!( (q_steady[0] * rho - 0.1).abs() < 1e-8 );
     assert!( (q_steady[1] * rho - 0.1).abs() < 1e-8 );
 
-    let dt = 0.1;
+    *solver.dt() = 0.1;
     
-    let _result = solver.time_step( &mut network, &fluid, dt );
+    let _result = solver.time_step( &mut network, &fluid );
     assert_eq!( solver.tnodes(), vec![ 0.0, 0.1 ] );
     let (_q_current, h_current) = network.current_solution_qh( rho, g, 1 );
     assert!( (h_current[0] * rho * g - 122325.0).abs() < 1e-8 );
@@ -65,7 +65,7 @@ fn time_step() {
     // Need to add boundary values for the next time step
     network.add_boundary_value( 0, 123325.0 );
     network.add_boundary_value( 2, 0.0 );
-    let _result = solver.time_step( &mut network, &fluid, dt );
+    let _result = solver.time_step( &mut network, &fluid );
     assert!( (solver.tnodes()[2] - 0.2).abs() < 1e-8 );
     let (_q_current, h_current) = network.current_solution_qh( rho, g, 2 );
     assert!( (h_current[0] * rho * g - 123325.0).abs() < 1e-8 );

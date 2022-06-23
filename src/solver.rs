@@ -195,7 +195,7 @@ impl Solver {
         }
     }
 
-    pub fn time_step(&mut self, network: &mut Graph, fluid: &Fluid, dt: f64 ) -> Result<usize,f64> {
+    pub fn time_step(&mut self, network: &mut Graph, fluid: &Fluid ) -> Result<usize,f64> {
         let step = self.tnodes.len() - 1;
         println!("Time step {}", step);
         let ( qn, hn ) = network.current_solution_qh( fluid.density(), self.g, step ); 
@@ -206,6 +206,7 @@ impl Solver {
         if size == 0 { return Err(1.0); }
         if m == 0 { return Err(1.0); }
         if !self.solved_steady { return Err(1.0); }
+        let dt = *self.dt();
         let invdt = 1.0 / dt;
 
         let kt = network.incidence_matrix();

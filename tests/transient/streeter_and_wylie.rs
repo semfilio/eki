@@ -16,6 +16,7 @@ fn example3_1() {
 
     let mut solver = Solver::default();
     *solver.g() = 9.806;
+    *solver.dt() = dt;
     let mut network = Graph::new();
     let fluid = Fluid::new( 997.0, 1.1375e-6, 2.15e9 );
 
@@ -105,7 +106,7 @@ fn example3_1() {
     ];
 
     for step in 1..6 {
-        let result = solver.time_step( &mut network, &fluid, dt );
+        let result = solver.time_step( &mut network, &fluid );
         assert!( result.is_ok() && !result.is_err() );
         let valve_pressure = (*network.nodes()[5].pressure())[step];
         let valve_head = valve_pressure / ( fluid.density() * solver.gravity() );
