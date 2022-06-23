@@ -1,6 +1,7 @@
 use std::f64::consts::PI;
 use crate::node::Node;
 use crate::fluid::Fluid;
+use crate::events::TransientEvent;
 
 #[derive(Clone, PartialEq, Debug, Default, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "persistence", serde(default))]
@@ -13,6 +14,9 @@ pub struct Valve {
     pub youngs_modulus: f64,
     pub k: Vec<(f64, f64)>, // (% open, k)
     pub open_percent: Vec<f64>,
+    pub events: Vec<TransientEvent>,
+    pub width: f32,
+    pub selected: bool,
 }
 
 impl Valve {
@@ -24,7 +28,6 @@ impl Valve {
             diameter: 52.5e-3,
             thickness: 0.005, // 5mm pipe
             youngs_modulus: 2.0e11, // Steel pipe TODO should be able to modify
-            open_percent: vec![ 1.0 ],
             k: vec![ 
                 (0.000, 1.0e16),
                 (0.111, 700.),
@@ -37,6 +40,10 @@ impl Valve {
                 (0.889, 0.5),
                 (1.000, 0.25),
             ],
+            open_percent: vec![ 1.0 ],
+            events: vec![],
+            width: 10.0, 
+            selected: false,
         }
     }
 
@@ -102,4 +109,17 @@ impl Valve {
         let result = 2.0 * g * a * a / ( self.k( 0 ) * head_loss.abs() );
         result.sqrt()
     }
+
+    pub fn create_transient_values(&mut self, tnodes: &[f64]) {
+        let mass_flow = vec![ self.mass_flow[0]; tnodes.len() ];
+        self.mass_flow = mass_flow;
+        let mut open_percent = vec![ self.open_percent[0]; tnodes.len() ];
+        for (i, t) in tnodes.iter().enumerate() {
+            for event in self.events.iter() {
+                open_percent[i] = event.open_percent( *t, open_percent[0] );
+            }
+        }
+        self.open_percent = open_percent;
+    } 
+
 }
