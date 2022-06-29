@@ -308,4 +308,18 @@ impl Graph {
         if let Some( index ) = result { self.edges[ index ] = edge; }
     }
 
+    pub fn remove_transient_values(&mut self) {
+        for node in self.mut_nodes() {
+            *node.pressure() = vec![ *node.steady_pressure() ];
+            *node.consumption() = vec![ *node.steady_consumption() ];
+        }
+        for edge in self.mut_edges() {
+            *edge.mass_flow() = vec![ *edge.steady_mass_flow() ];
+            if let Some(open_percent) = edge.open_percent() {
+                *open_percent = vec![ open_percent[0] ];
+            }
+
+        }
+    }
+
 }
