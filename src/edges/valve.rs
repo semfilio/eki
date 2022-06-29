@@ -122,7 +122,8 @@ impl Valve {
     }*/ 
 
     pub fn add_transient_value( &mut self, time: f64 ) {
-        let steady = *self.open_percent.last().unwrap();
+        //let steady = *self.open_percent.last().unwrap();
+        let steady = self.open_percent[0];
         for event in self.events.iter() {
             self.open_percent.push( event.open_percent( time, steady ) );
             /*if time >= event.time()  {
