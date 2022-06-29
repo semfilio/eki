@@ -299,6 +299,9 @@ impl Solver {
             network.push_transient_solution( qg, hg, fluid, *self.g() );
             Ok( iter )
         } else {
+            println!("qg = {:?}", qg);
+            println!("hg = {:?}", hg);
+            println!("iter = {}", iter);
             Err( max_residual )
         }
 
