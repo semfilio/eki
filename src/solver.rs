@@ -55,6 +55,10 @@ impl Solver {
         self.tnodes.clone()
     }
 
+    pub fn reset_tnodes(&mut self) {
+        self.tnodes = vec![0.0]
+    }
+
     pub fn theta(&mut self) -> &mut f64 {
         &mut self.theta
     }
@@ -197,7 +201,7 @@ impl Solver {
 
     pub fn time_step(&mut self, network: &mut Graph, fluid: &Fluid ) -> Result<usize,f64> {
         let step = self.tnodes.len() - 1;
-        println!("Time step {}", step);
+        //println!("Time step {}", step);
         let ( qn, hn ) = network.current_solution_qh( fluid.density(), self.g, step ); 
         let ( mut qg, mut hg ) = ( qn.clone(), hn.clone() );
         let dt = *self.dt();
@@ -293,15 +297,12 @@ impl Solver {
         if iter < self.max_iter && !max_residual.is_nan() {
             let t = *self.tnodes.last().unwrap();
             self.tnodes.push( t + dt );
-            println!("qg = {:?}", qg);
-            println!("hg = {:?}", hg);
-            println!("iter = {}", iter);
+            //println!("qg = {:?}", qg);
+            //println!("hg = {:?}", hg);
+            //println!("iter = {}", iter);
             network.push_transient_solution( qg, hg, fluid, *self.g() );
             Ok( iter )
         } else {
-            println!("qg = {:?}", qg);
-            println!("hg = {:?}", hg);
-            println!("iter = {}", iter);
             Err( max_residual )
         }
 
