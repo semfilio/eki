@@ -5,7 +5,7 @@ use crate::utility;
 
 #[derive(serde::Deserialize, serde::Serialize)]
 pub struct Solver {
-    solver_type: SolverType,    // Type of solver Steady or Transient
+    solver_type: SolverType,    // TODO do we need this ?? Type of solver Steady or Transient
     solved_steady: bool,        // True if the steady problem has been solved 
     solved_transient: bool,     // True if the transient problem has been solved
     max_iter: usize,            // Maximum number of iterations

@@ -9,6 +9,22 @@ use eki::solver::Solver;
 //use eki::utility;
 
 #[test]
+fn resistance() {
+    let from = Node::Pressure( Pressure::new_elevation( 0, 0.0 ) );
+    let to = Node::Pressure( Pressure::new_elevation( 1, 20.0 ) );
+    let mut pump = Pump::new_params( from, to, vec![ 22.9, 10.7, -111.0 ], 
+        ( 50.0 / (60.0 * 60.0), 50.0, 2950.0, 163.0e-3 ) );
+    let head = pump.resistance( 0.23, 1.0, 1.0 );
+    assert_eq!( head, 22.9 + 10.7 * 0.23 - 111.0 * 0.23 * 0.23 );
+    // Change the speed
+    pump.speed = 2000.0;
+    let head = pump.resistance( 0.23, 1.0, 1.0 );
+    let xi = ( 2950.0 / 2000.0 ) * ( 163.0e-3 / 163.0e-3 );
+    let corrected_head = 22.9 * xi * xi + 10.7 * xi * 0.23 - 111.0 * 0.23 * 0.23;
+    assert!( (head - corrected_head).abs() < 1.0e-8 );
+}
+
+#[test]
 fn basic_pump() {
     let fluid = Fluid::new( 998.162, 1.1375e-6, 2.15e9 );
     let mut graph = Graph::new();
@@ -19,13 +35,15 @@ fn basic_pump() {
     let node_to = Node::Pressure( Pressure::new_elevation( 1, 20.0 ) );
     graph.add_node( node_to.clone() );
 
-    let pump = Edge::Pump( Pump::new_data( node_from, node_to, 
+    let pump = Edge::Pump( Pump::new_params( node_from, node_to, 
         vec![ 
+            46.0, -8460.59, 387449.0
             // (Q, dH)
-            (0.00, 46.00),
+            /*(0.00, 46.00),
             (13.32 / ( 60.0 * 60.0 ), 20.00),
-            (36.80 / ( 60.0 * 60.0 ), 0.00)
-        ]
+            (36.80 / ( 60.0 * 60.0 ), 0.00)*/
+        ], 
+        ( 50.0 / (60.0 * 60.0), 50.0, 2950.0, 163.0e-3 )
     ));
     graph.add_edge( pump );
 
@@ -36,10 +54,11 @@ fn basic_pump() {
     } 
     assert!( result.is_ok() && !result.is_err() );
     let volume_flow = *graph.edges()[0].steady_mass_flow() / fluid.density();
-    assert!( volume_flow - ( 13.32 / ( 60.0 * 60.0 ) ) < 1.0e-6 );
+    assert!( (volume_flow - ( 13.32 / ( 60.0 * 60.0 ) )).abs() < 1.0e-8 );
 }
 
-#[test]
+
+/*#[test]
 fn pump_and_pipe() {
     let fluid = Fluid::default();
     let mut graph = Graph::new();
@@ -97,7 +116,7 @@ fn pump_and_pipe() {
     assert_eq!( p_connection, 453585.47688527644 );             //TODO get value from FD
     let h_to = graph.nodes()[2].steady_head( solver.gravity(), fluid.density() );
     assert_eq!( h_to, (101325.0 / rho_g) + 20.0 );
-}
+}*/
 
 #[test]
 fn pipe_pump_pipe() {
