@@ -39,7 +39,7 @@ impl Pump {
             thickness: 5.0e-3,                      // 5mm
             youngs_modulus: 2.0e11,                 // Steel
             events: vec![],
-            width: 10.0, 
+            width: 20.0, 
             selected: false,
         }
     }
@@ -59,7 +59,7 @@ impl Pump {
             thickness: 5.0e-3,                      // 5mm
             youngs_modulus: 2.0e11,                 // Steel
             events: vec![],
-            width: 10.0, 
+            width: 20.0, 
             selected: false,
         }
     }
