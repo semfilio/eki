@@ -86,7 +86,7 @@ impl Edge {
         match self {
             Edge::Pipe(edge) => &mut edge.diameter,
             Edge::Valve(edge) => &mut edge.diameter,
-            Edge::Pump(edge) => &mut edge.diameter, 
+            Edge::Pump(edge) => &mut edge.diameter,     // Impeller diameter
         }
     }
 
@@ -128,6 +128,14 @@ impl Edge {
             Edge::Pipe(_edge) => None,
             Edge::Valve(edge) => Some(&mut edge.open_percent),
             Edge::Pump(_edge) => None,
+        }
+    }
+
+    pub fn speed(&mut self) -> Option<&mut f64> {
+        match self {
+            Edge::Pipe(_edge) => None,
+            Edge::Valve(_edge) => None,
+            Edge::Pump(edge) => Some(&mut edge.speed),
         }
     }
 
