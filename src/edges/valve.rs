@@ -87,6 +87,10 @@ impl Valve {
         }
     }
 
+    pub fn k_values(&mut self) -> &mut Vec<(f64, f64)> {
+        &mut self.k
+    }
+
     pub fn k(&self, step: usize ) -> f64 {
         self.interpolate_k( self.open_percent[step] )
     }
