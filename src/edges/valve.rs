@@ -42,7 +42,7 @@ impl Valve {
             ],
             open_percent: vec![ 1.0 ],
             events: vec![],
-            width: 10.0, 
+            width: 20.0, 
             selected: false,
         }
     }

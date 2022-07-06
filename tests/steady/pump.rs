@@ -1,4 +1,3 @@
-//use std::f64::consts::PI;
 use eki::fluid::Fluid;
 use eki::node::Node;
 use eki::nodes::{ pressure::Pressure, connection::Connection };
@@ -6,7 +5,6 @@ use eki::edge::Edge;
 use eki::edges::{ pump::Pump, pipe::Pipe };
 use eki::graph::Graph;
 use eki::solver::Solver;
-//use eki::utility;
 
 #[test]
 fn resistance() {
