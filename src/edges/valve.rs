@@ -3,6 +3,44 @@ use crate::node::Node;
 use crate::fluid::Fluid;
 use crate::events::TransientEvent;
 
+#[derive(Clone, PartialEq, Debug, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "persistence", serde(default))]
+pub enum ValveType {
+    AngleGlobe,
+    Ball,
+    Butterfly,
+    Diaphragm,
+    Gate,
+    Globe,
+    Needle,
+    Pinch,
+    Plug,
+    Slide,
+}
+
+impl Default for ValveType {
+    fn default() -> Self {
+        ValveType::Butterfly
+    }
+}
+
+impl ValveType {
+    pub fn text(&self) -> String {
+        match self {
+            ValveType::AngleGlobe => "Angle Globe".to_string(),
+            ValveType::Ball => "Ball".to_string(),
+            ValveType::Butterfly => "Butterfly".to_string(),
+            ValveType::Diaphragm => "Diaphragm".to_string(),
+            ValveType::Gate => "Gate".to_string(),
+            ValveType::Globe => "Globe".to_string(),
+            ValveType::Needle => "Needle".to_string(),
+            ValveType::Pinch => "Pinch".to_string(),
+            ValveType::Plug => "Plug".to_string(),
+            ValveType::Slide => "Slide".to_string(),
+        }
+    }
+}
+
 #[derive(Clone, PartialEq, Debug, Default, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "persistence", serde(default))]
 pub struct Valve {
@@ -17,6 +55,7 @@ pub struct Valve {
     pub events: Vec<TransientEvent>,
     pub width: f32,
     pub selected: bool,
+    pub valve_type: ValveType,
 }
 
 impl Valve {
@@ -42,8 +81,9 @@ impl Valve {
             ],
             open_percent: vec![ 1.0 ],
             events: vec![],
-            width: 20.0, 
+            width: 15.0, 
             selected: false,
+            valve_type: ValveType::Butterfly,
         }
     }
 
