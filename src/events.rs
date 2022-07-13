@@ -87,8 +87,8 @@ impl TransientEvent {
             TransientEvent::PumpLinearShutdown( event_time, shutdown_time) => {
                 if time < event_time.0 {
                     steady_speed
-                } else if time < shutdown_time.0 {
-                    let tau = 1.0 - (time - event_time.0) / (shutdown_time.0 - event_time.0);
+                } else if time < event_time.0 + shutdown_time.0 {
+                    let tau = 1.0 - (time - event_time.0) / shutdown_time.0;
                     steady_speed * tau
                 } else {
                     0.0
