@@ -33,7 +33,7 @@ impl Pump {
             from,
             to,
             mass_flow: vec![ 0.0 ],
-            c: vec![ 1.0, 0.0, -1.0 ],
+            c: vec![ 46.0, -8460.59, 387449.0 ],
             q_rated: 50.0 / (60.0 * 60.0),          // 50m^3 / hour
             h_rated: 50.0,                          // 50m
             n_rated: 2950.0,                        // 2950 rpm
