@@ -33,7 +33,7 @@ impl Pump {
             from,
             to,
             mass_flow: vec![ 0.0 ],
-            c: vec![ 46.0, -8460.59, 387449.0 ],
+            c: vec![ 46.0, 1108.36, -548644.0 ],
             q_rated: 50.0 / (60.0 * 60.0),          // 50m^3 / hour
             h_rated: 50.0,                          // 50m
             n_rated: 2950.0,                        // 2950 rpm
@@ -81,7 +81,7 @@ impl Pump {
 
     // TODO maybe we should only calculate the coefficients once unless something changes
     pub fn c_affinity(&self, step: usize ) -> Vec<f64> {
-        let xi = self.n_rated * self.d_rated / ( self.speed[ step ] * self.diameter );
+        let xi = ( self.speed[ step ] * self.diameter ) / ( self.n_rated * self.d_rated ) ;
         let mut c_dash = self.c.clone();
         for i in 0..c_dash.len() {
             c_dash[i] *= xi.powi( 2 - i as i32 );
@@ -153,7 +153,7 @@ impl Pump {
         let f = 0.1;        // assumed friction factor for initial guess
         let a = self.area();
         let result = 2.0 * g * self.diameter * a * a / ( f * 1.0 * head_loss.abs() );
-        result.sqrt()
+        - result.sqrt()
         //println!( "head_loss = {}", head_loss );
         //- self.interpolate_head( head_loss.abs() )
     }
