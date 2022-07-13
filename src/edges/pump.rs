@@ -15,7 +15,7 @@ pub struct Pump {
     pub n_rated: f64,               // Rated speed [rpm]
     pub d_rated: f64,               // Rated impeller diameter [m]
     pub diameter: f64,              // Impeller diameter [m]
-    pub speed:  f64,                // Speed [rpm]                      //TODO maybe this should be a vector of speeds ???
+    pub speed:  Vec<f64>,           // Speed [rpm] at each time step
     pub thickness: f64,             // [m]
     pub youngs_modulus: f64,        // [Pa]
     pub min_diameter: f64,          // [m]
@@ -39,7 +39,7 @@ impl Pump {
             n_rated: 2950.0,                        // 2950 rpm
             d_rated: 163.0e-3,                      // 163mm
             diameter: 163.0e-3,                     // 163mm
-            speed: 2950.0,
+            speed: vec![ 2950.0 ],                  // 2950 rpm
             thickness: 5.0e-3,                      // 5mm
             youngs_modulus: 2.0e11,                 // Steel
             min_diameter: 139.0e-3,                 // 139mm
@@ -63,7 +63,7 @@ impl Pump {
             n_rated: rated.2,
             d_rated: rated.3,                      
             diameter: rated.3,                     
-            speed: rated.2,
+            speed: vec![ rated.2 ],
             thickness: 5.0e-3,                      // 5mm
             youngs_modulus: 2.0e11,                 // Steel
             min_diameter: rated.3,                 
@@ -80,8 +80,8 @@ impl Pump {
 
 
     // TODO maybe we should only calculate the coefficients once unless something changes
-    pub fn c_affinity(&self) -> Vec<f64> {
-        let xi = self.n_rated * self.d_rated / ( self.speed * self.diameter );
+    pub fn c_affinity(&self, step: usize ) -> Vec<f64> {
+        let xi = self.n_rated * self.d_rated / ( self.speed[ step ] * self.diameter );
         let mut c_dash = self.c.clone();
         for i in 0..c_dash.len() {
             c_dash[i] *= xi.powi( 2 - i as i32 );
@@ -89,9 +89,9 @@ impl Pump {
         c_dash
     }
 
-    pub fn resistance(&self, flow_rate: f64, _nu: f64, _g: f64 ) -> f64 {
+    pub fn resistance(&self, flow_rate: f64, _nu: f64, _g: f64, step: usize ) -> f64 {
         // Evaluate polynomial using Horner's method
-        self.c_affinity().iter()
+        self.c_affinity( step ).iter()
         .rev()
         .fold( 0.0, |acc, coeff| acc * flow_rate.clone() + coeff.clone())
     }
@@ -156,6 +156,16 @@ impl Pump {
         result.sqrt()
         //println!( "head_loss = {}", head_loss );
         //- self.interpolate_head( head_loss.abs() )
+    }
+
+    pub fn add_transient_value( &mut self, time: f64 ) {
+        let steady = self.speed[0];
+        for event in self.events.iter() {
+            self.speed.push( event.pump_speed( time, steady ) );
+        }
+        if self.events.len() == 0 {
+            self.speed.push( *self.speed.last().unwrap() );
+        }
     }
 
     /*pub fn interpolate_head(&self, head_loss: f64 ) -> f64 {

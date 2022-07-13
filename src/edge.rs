@@ -147,7 +147,7 @@ impl Edge {
         }
     }
 
-    pub fn speed(&mut self) -> Option<&mut f64> {
+    pub fn speed(&mut self) -> Option<&mut Vec<f64>> {
         match self {
             Edge::Pipe(_edge) => None,
             Edge::Valve(_edge) => None,
@@ -214,7 +214,7 @@ impl Edge {
         match self {
             Edge::Pipe(edge) => edge.resistance( flow_rate, nu, g ),
             Edge::Valve(edge) => edge.resistance( flow_rate, nu, g, step ),
-            Edge::Pump(edge) => edge.resistance( flow_rate, nu, g ),
+            Edge::Pump(edge) => edge.resistance( flow_rate, nu, g, step ),
         }
     }
 
@@ -247,7 +247,7 @@ impl Edge {
         match self {
             Edge::Pipe(_edge) => {},
             Edge::Valve(edge) => edge.add_transient_value( time ), 
-            Edge::Pump(_edge) => {}, //TODO
+            Edge::Pump(edge) => edge.add_transient_value( time ),
         }
     }
 
@@ -255,7 +255,7 @@ impl Edge {
         match self {
             Edge::Pipe(_edge) => None,
             Edge::Valve(edge) => Some(&mut edge.events),
-            Edge::Pump(_edge) => None, //TODO
+            Edge::Pump(edge) => Some(&mut edge.events),
         }
     }
 
@@ -263,7 +263,7 @@ impl Edge {
         match self {
             Edge::Pipe(_edge) => {},
             Edge::Valve(edge) => edge.events.push(event),
-            Edge::Pump(_edge) => {}, //TODO
+            Edge::Pump(edge) => edge.events.push(event),
         }
     }
 
@@ -271,7 +271,7 @@ impl Edge {
         match self {
             Edge::Pipe(_edge) => None,
             Edge::Valve(edge) => edge.events.pop(),
-            Edge::Pump(_edge) => None, //TODO
+            Edge::Pump(edge) => edge.events.pop(),
         }
     }
 

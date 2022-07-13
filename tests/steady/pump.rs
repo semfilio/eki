@@ -12,11 +12,11 @@ fn resistance() {
     let to = Node::Pressure( Pressure::new_elevation( 1, 20.0 ) );
     let mut pump = Pump::new_params( from, to, vec![ 22.9, 10.7, -111.0 ], 
         ( 50.0 / (60.0 * 60.0), 50.0, 2950.0, 163.0e-3 ) );
-    let head = pump.resistance( 0.23, 1.0, 1.0 );
+    let head = pump.resistance( 0.23, 1.0, 1.0, 0 );
     assert_eq!( head, 22.9 + 10.7 * 0.23 - 111.0 * 0.23 * 0.23 );
     // Change the speed
-    pump.speed = 2000.0;
-    let head = pump.resistance( 0.23, 1.0, 1.0 );
+    pump.speed = vec![ 2000.0 ];
+    let head = pump.resistance( 0.23, 1.0, 1.0, 0 );
     let xi = ( 2950.0 / 2000.0 ) * ( 163.0e-3 / 163.0e-3 );
     let corrected_head = 22.9 * xi * xi + 10.7 * xi * 0.23 - 111.0 * 0.23 * 0.23;
     assert!( (head - corrected_head).abs() < 1.0e-8 );
