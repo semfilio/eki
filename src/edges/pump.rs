@@ -18,6 +18,10 @@ pub struct Pump {
     pub speed:  f64,                // Speed [rpm]                      //TODO maybe this should be a vector of speeds ???
     pub thickness: f64,             // [m]
     pub youngs_modulus: f64,        // [Pa]
+    pub min_diameter: f64,          // [m]
+    pub max_diameter: f64,          // [m]
+    pub min_speed: f64,             // [rpm]
+    pub max_speed: f64,             // [rpm]
     pub events: Vec<TransientEvent>,
     pub width: f32,
     pub selected: bool,
@@ -38,6 +42,10 @@ impl Pump {
             speed: 2950.0,
             thickness: 5.0e-3,                      // 5mm
             youngs_modulus: 2.0e11,                 // Steel
+            min_diameter: 139.0e-3,                 // 139mm
+            max_diameter: 177.0e-3,                 // 177mm
+            min_speed: 1450.0,                      // 1450 rpm
+            max_speed: 2950.0,                      // 2950 rpm
             events: vec![],
             width: 15.0, 
             selected: false,
@@ -58,6 +66,10 @@ impl Pump {
             speed: rated.2,
             thickness: 5.0e-3,                      // 5mm
             youngs_modulus: 2.0e11,                 // Steel
+            min_diameter: rated.3,                 
+            max_diameter: rated.3,                 
+            min_speed: rated.2,                     
+            max_speed: rated.2,                     
             events: vec![],
             width: 15.0, 
             selected: false,
