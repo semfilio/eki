@@ -17,7 +17,7 @@ fn resistance() {
     // Change the speed
     pump.speed = vec![ 2000.0 ];
     let head = pump.resistance( 0.23, 1.0, 1.0, 0 );
-    let xi = ( 2950.0 / 2000.0 ) * ( 163.0e-3 / 163.0e-3 );
+    let xi = ( 2000.0 / 2950.0 ) * ( 163.0e-3 / 163.0e-3 );
     let corrected_head = 22.9 * xi * xi + 10.7 * xi * 0.23 - 111.0 * 0.23 * 0.23;
     assert!( (head - corrected_head).abs() < 1.0e-8 );
 }
@@ -30,15 +30,15 @@ fn basic_pump() {
     let node_from = Node::Pressure( Pressure::new_elevation( 0, 0.0 ) );
     graph.add_node( node_from.clone() );
 
-    let node_to = Node::Pressure( Pressure::new_elevation( 1, 20.0 ) );
+    let node_to = Node::Pressure( Pressure::new_elevation( 1, 42.59 ) );
     graph.add_node( node_to.clone() );
 
     let pump = Edge::Pump( Pump::new_params( node_from, node_to, 
         vec![ 
-            46.0, -8460.59, 387449.0
+            46.0, 1108.36, -548644.0
             // (Q, dH)
             /*(0.00, 46.00),
-            (13.32 / ( 60.0 * 60.0 ), 20.00),
+            (13.32 / ( 60.0 * 60.0 ), 42.59),
             (36.80 / ( 60.0 * 60.0 ), 0.00)*/
         ], 
         ( 50.0 / (60.0 * 60.0), 50.0, 2950.0, 163.0e-3 )
@@ -53,6 +53,48 @@ fn basic_pump() {
     assert!( result.is_ok() && !result.is_err() );
     let volume_flow = *graph.edges()[0].steady_mass_flow() / fluid.density();
     assert!( (volume_flow - ( 13.32 / ( 60.0 * 60.0 ) )).abs() < 1.0e-8 );
+}
+
+#[test]
+fn speed_affinity_law() {
+    let fluid = Fluid::new( 998.162, 1.1375e-6, 2.15e9 );
+    let mut graph = Graph::new();
+
+    let node_from = Node::Pressure( Pressure::new_elevation( 0, 0.0 ) );
+    graph.add_node( node_from.clone() );
+
+    let node_to = Node::Pressure( Pressure::new_elevation( 1, 42.59 ) );
+    graph.add_node( node_to.clone() );
+
+    let mut pump = Edge::Pump( Pump::new_params( node_from, node_to, 
+        vec![ 
+            46.0, 1108.36, -548644.0
+            // (Q, dH)
+            /*(0.00, 46.00),
+            (13.32 / ( 60.0 * 60.0 ), 42.59),
+            (36.80 / ( 60.0 * 60.0 ), 0.00)*/
+        ], 
+        ( 50.0 / (60.0 * 60.0), 50.0, 2950.0, 163.0e-3 )
+    ));
+    if let Some(speed) = pump.speed() {
+        speed[0] = 2900.0;
+    }
+    graph.add_edge( pump );
+
+    let mut solver = Solver::default();
+    let result = solver.solve_steady( &mut graph, &fluid, true );
+    if let Err(residual) = result {
+        println!( "residual = {}", residual );
+    } 
+    assert!( result.is_ok() && !result.is_err() );
+    let volume_flow = *graph.edges()[0].steady_mass_flow() / fluid.density();
+    let xi: f64 = 2900. / 2950. ;
+    let c = 46. * xi * xi;
+    let b = 1108.36 * xi;
+    let a = -548644.;
+    let dh = 42.59;
+    let q = (-b - (b * b - 4.0 * a * (c- dh)).sqrt()) / (2.0 * a);
+    assert!( (volume_flow - q).abs() < 1.0e-8 );
 }
 
 
