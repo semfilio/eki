@@ -9,6 +9,7 @@ pub enum TransientEvent {
     None,
     InstantaneousChange(Value, Time),
     ValveClosure(Value, Time, Time),
+    PumpLinearShutdown(Time, Time),
 }
 
 impl Default for TransientEvent {
@@ -23,6 +24,7 @@ impl TransientEvent {
             TransientEvent::None => "None".to_string(),
             TransientEvent::InstantaneousChange(_, _) => "Instantaneous change".to_string(),
             TransientEvent::ValveClosure(_, _, _) => "Valve closure".to_string(),
+            TransientEvent::PumpLinearShutdown(_,_) => "Linear shutdown".to_string(),
         }
     }
 
@@ -31,6 +33,7 @@ impl TransientEvent {
             TransientEvent::None => 0.0,
             TransientEvent::InstantaneousChange(_, time) => time.0,
             TransientEvent::ValveClosure(_, event_time, _) => event_time.0,
+            TransientEvent::PumpLinearShutdown(event_time, _) => event_time.0,
         }
     }
 
@@ -39,6 +42,7 @@ impl TransientEvent {
             TransientEvent::None => 0.0,
             TransientEvent::InstantaneousChange(value, _) => value.0,
             TransientEvent::ValveClosure(exponent, _, _) => exponent.0,
+            TransientEvent::PumpLinearShutdown(_, shutdown_time) => shutdown_time.0,
         }
     }
 
@@ -47,6 +51,7 @@ impl TransientEvent {
             TransientEvent::None => 0.0,
             TransientEvent::InstantaneousChange(_, _) => 0.0,
             TransientEvent::ValveClosure(_, _, closing_time) => closing_time.0,
+            TransientEvent::PumpLinearShutdown(_, shutdown_time) => shutdown_time.0,
         }
     }
 
@@ -69,7 +74,26 @@ impl TransientEvent {
                 } else {
                     0.0
                 }
-            }
+            },
+            TransientEvent::PumpLinearShutdown(_event_time, _shutdown_time) => 0.0,
+        }
+    }
+
+    pub fn pump_speed(&self, time: f64, steady_speed: f64 ) -> f64 {
+        match self {
+            TransientEvent::None => steady_speed,
+            TransientEvent::InstantaneousChange(_,_) => steady_speed,
+            TransientEvent::ValveClosure(_,_,_) => steady_speed,
+            TransientEvent::PumpLinearShutdown( event_time, shutdown_time) => {
+                if time < event_time.0 {
+                    steady_speed
+                } else if time < shutdown_time.0 {
+                    let tau = 1.0 - (time - event_time.0) / (shutdown_time.0 - event_time.0);
+                    steady_speed * tau
+                } else {
+                    0.0
+                }
+            },
         }
     }
 }
