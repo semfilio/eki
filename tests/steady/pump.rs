@@ -1,83 +1,55 @@
 use eki::fluid::Fluid;
 use eki::node::Node;
-use eki::nodes::{ pressure::Pressure, connection::Connection };
+use eki::nodes::{ pressure::Pressure };
 use eki::edge::Edge;
-use eki::edges::{ pump::Pump, pipe::Pipe };
+use eki::edges::{ pump::Pump };
 use eki::graph::Graph;
 use eki::solver::Solver;
 
 #[test]
-fn resistance() {
+fn interpolate_head_data() {
     let from = Node::Pressure( Pressure::new_elevation( 0, 0.0 ) );
     let to = Node::Pressure( Pressure::new_elevation( 1, 20.0 ) );
-    let mut pump = Pump::new_params( from, to, vec![ 22.9, 10.7, -111.0 ], 
-        ( 50.0 / (60.0 * 60.0), 50.0, 2950.0, 163.0e-3 ) );
-    let head = pump.resistance( 0.23, 1.0, 1.0, 0 );
-    assert_eq!( head, 22.9 + 10.7 * 0.23 - 111.0 * 0.23 * 0.23 );
-    // Change the speed
-    pump.speed = vec![ 2000.0 ];
-    let head = pump.resistance( 0.23, 1.0, 1.0, 0 );
-    let xi = ( 2000.0 / 2950.0 ) * ( 163.0e-3 / 163.0e-3 );
-    let corrected_head = 22.9 * xi * xi + 10.7 * xi * 0.23 - 111.0 * 0.23 * 0.23;
-    assert!( (head - corrected_head).abs() < 1.0e-8 );
+    let pump = Pump::new( from, to );
+    assert_eq!( pump.f_h( 0.0 ), -0.55 );
+    let theta = (30.0_f64).to_radians();
+    let h = pump.f_h( theta );
+    assert_eq!( h, 0.06 );
+    let theta = (102.5_f64).to_radians();
+    let h = pump.f_h( theta );
+    assert!( (h - 1.325).abs() < 1.0e-10 );
+    let theta = (357.5_f64).to_radians();
+    let h = pump.f_h( theta );
+    assert!( (h - (-0.58)).abs() < 1.0e-10 );
 }
 
 #[test]
-fn basic_pump() {
-    let fluid = Fluid::new( 998.162, 1.1375e-6, 2.15e9 );
-    let mut graph = Graph::new();
-
-    let node_from = Node::Pressure( Pressure::new_elevation( 0, 0.0 ) );
-    graph.add_node( node_from.clone() );
-
-    let node_to = Node::Pressure( Pressure::new_elevation( 1, 42.59 ) );
-    graph.add_node( node_to.clone() );
-
-    let pump = Edge::Pump( Pump::new_params( node_from, node_to, 
-        vec![ 
-            46.0, 1108.36, -548644.0
-            // (Q, dH)
-            /*(0.00, 46.00),
-            (13.32 / ( 60.0 * 60.0 ), 42.59),
-            (36.80 / ( 60.0 * 60.0 ), 0.00)*/
-        ], 
-        ( 50.0 / (60.0 * 60.0), 50.0, 2950.0, 163.0e-3 )
-    ));
-    graph.add_edge( pump );
-
-    let mut solver = Solver::default();
-    let result = solver.solve_steady( &mut graph, &fluid, true );
-    if let Err(residual) = result {
-        println!( "residual = {}", residual );
-    } 
-    assert!( result.is_ok() && !result.is_err() );
-    let volume_flow = *graph.edges()[0].steady_mass_flow() / fluid.density();
-    assert!( (volume_flow - ( 13.32 / ( 60.0 * 60.0 ) )).abs() < 1.0e-8 );
+fn resistance() {
+    let from = Node::Pressure( Pressure::new_elevation( 0, 0.0 ) );
+    let to = Node::Pressure( Pressure::new_elevation( 1, 100.0 ) );
+    let mut pump = Pump::new( from, to );
+    let flow = 300.0 / ( 60.0 * 60.0 );         // 300 m^3/hour
+    pump.speed[0] = 5650.0 / 3.0_f64.sqrt();    // 3262.03 rpm
+    let r = pump.resistance( flow, 0.0, 0.0, 0 );  
+    assert!( (r - 6.6).abs() < 1.0e-10 );  
 }
 
 #[test]
-fn speed_affinity_law() {
+fn basic_steady_pump() {
     let fluid = Fluid::new( 998.162, 1.1375e-6, 2.15e9 );
     let mut graph = Graph::new();
 
+    let elevation = 100.0;
     let node_from = Node::Pressure( Pressure::new_elevation( 0, 0.0 ) );
     graph.add_node( node_from.clone() );
-
-    let node_to = Node::Pressure( Pressure::new_elevation( 1, 42.59 ) );
+    let node_to = Node::Pressure( Pressure::new_elevation( 1, elevation ) );
     graph.add_node( node_to.clone() );
 
-    let mut pump = Edge::Pump( Pump::new_params( node_from, node_to, 
-        vec![ 
-            46.0, 1108.36, -548644.0
-            // (Q, dH)
-            /*(0.00, 46.00),
-            (13.32 / ( 60.0 * 60.0 ), 42.59),
-            (36.80 / ( 60.0 * 60.0 ), 0.00)*/
-        ], 
-        ( 50.0 / (60.0 * 60.0), 50.0, 2950.0, 163.0e-3 )
-    ));
+    let steady_speed: f64 = 5000.0;
+    let new_pump = Pump::new( node_from, node_to );
+    let mut pump = Edge::Pump( new_pump.clone() );
     if let Some(speed) = pump.speed() {
-        speed[0] = 2900.0;
+        speed[0] = steady_speed;
     }
     graph.add_edge( pump );
 
@@ -88,15 +60,15 @@ fn speed_affinity_law() {
     } 
     assert!( result.is_ok() && !result.is_err() );
     let volume_flow = *graph.edges()[0].steady_mass_flow() / fluid.density();
-    let xi: f64 = 2900. / 2950. ;
-    let c = 46. * xi * xi;
-    let b = 1108.36 * xi;
-    let a = -548644.;
-    let dh = 42.59;
-    let q = (-b - (b * b - 4.0 * a * (c- dh)).sqrt()) / (2.0 * a);
-    assert!( (volume_flow - q).abs() < 1.0e-8 );
+    
+    let q = volume_flow / new_pump.q_rated;
+    let n: f64 = steady_speed / new_pump.n_rated;
+    let mut theta = n.atan2( q );
+    if theta < 0.0 { theta += 2.0 * std::f64::consts::PI; }
+    let fh = new_pump.f_h( theta );
+    let h = ( n * n + q * q ) * fh;
+    assert!( ( h - (elevation / new_pump.h_rated) ).abs() < 1.0e-10 );
 }
-
 
 /*#[test]
 fn pump_and_pipe() {

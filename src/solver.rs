@@ -292,8 +292,6 @@ impl Solver {
             iter += 1;
         }
         
-        
-
         if iter < self.max_iter && !max_residual.is_nan() {
             let t = *self.tnodes.last().unwrap();
             self.tnodes.push( t + dt );

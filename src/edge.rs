@@ -90,22 +90,6 @@ impl Edge {
         }
     }
 
-    pub fn max_diameter(&mut self) -> &mut f64 {
-        match self {
-            Edge::Pipe(edge) => &mut edge.diameter,
-            Edge::Valve(edge) => &mut edge.diameter,
-            Edge::Pump(edge) => &mut edge.max_diameter,     // Impeller diameter
-        }
-    }
-
-    pub fn min_diameter(&mut self) -> &mut f64 {
-        match self {
-            Edge::Pipe(edge) => &mut edge.diameter,
-            Edge::Valve(edge) => &mut edge.diameter,
-            Edge::Pump(edge) => &mut edge.min_diameter,     // Impeller diameter
-        }
-    }
-
     pub fn area(&self) -> f64 {
         match self {
             Edge::Pipe(edge) => edge.area(),
@@ -155,7 +139,7 @@ impl Edge {
         }
     }
 
-    pub fn max_speed(&mut self) -> Option<&mut f64> {
+    /*pub fn max_speed(&mut self) -> Option<&mut f64> {
         match self {
             Edge::Pipe(_edge) => None,
             Edge::Valve(_edge) => None,
@@ -169,7 +153,7 @@ impl Edge {
             Edge::Valve(_edge) => None,
             Edge::Pump(edge) => Some(&mut edge.min_speed),
         }
-    }
+    }*/
 
     pub fn steady_open_percent(&mut self) -> &mut f64 {
         &mut self.open_percent().unwrap()[0]

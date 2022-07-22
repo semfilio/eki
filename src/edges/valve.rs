@@ -67,18 +67,7 @@ impl Valve {
             diameter: 52.5e-3,
             thickness: 0.005, // 5mm pipe
             youngs_modulus: 2.0e11, // Steel pipe TODO should be able to modify
-            k: vec![ 
-                (0.000, 1.0e16),
-                (0.111, 700.),
-                (0.222, 160.),
-                (0.333, 60.),
-                (0.444, 23.),
-                (0.556, 7.9),
-                (0.667, 3.),
-                (0.778, 1.4),
-                (0.889, 0.5),
-                (1.000, 0.25),
-            ],
+            k: default_valve_data(),
             open_percent: vec![ 1.0 ],
             events: vec![],
             width: 15.0, 
@@ -182,4 +171,19 @@ impl Valve {
         //self.mass_flow.push( *self.mass_flow.last().unwrap() );
     }
 
+}
+
+fn default_valve_data() -> Vec<(f64, f64)> {
+    vec![ 
+        (0.000, 1.0e16),
+        (0.111, 700.),
+        (0.222, 160.),
+        (0.333, 60.),
+        (0.444, 23.),
+        (0.556, 7.9),
+        (0.667, 3.),
+        (0.778, 1.4),
+        (0.889, 0.5),
+        (1.000, 0.25),
+    ]
 }

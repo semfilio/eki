@@ -94,10 +94,4 @@ impl Pipe {
         result.sqrt()
     }
 
-    //TODO do we need this ???
-    /*pub fn create_transient_values(&mut self, tnodes: &[f64]) {
-        let mass_flow = vec![ self.mass_flow[0]; tnodes.len() ];
-        self.mass_flow = mass_flow;
-    } */
-
 }
