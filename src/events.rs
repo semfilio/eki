@@ -9,8 +9,8 @@ pub enum TransientEvent {
     None,
     InstantaneousChange(Value, Time),
     ValveClosure(Value, Time, Time),
-    PumpLinearShutdown(Time, Time),
-    PumpLinearStartup(Value, Time, Time),
+    PumpShutdown(Value, Time, Time),
+    PumpStartup(Value, Value, Time, Time),
 }
 
 impl Default for TransientEvent {
@@ -25,8 +25,8 @@ impl TransientEvent {
             TransientEvent::None => "None".to_string(),
             TransientEvent::InstantaneousChange(_, _) => "Instantaneous change".to_string(),
             TransientEvent::ValveClosure(_, _, _) => "Valve closure".to_string(),
-            TransientEvent::PumpLinearShutdown(_,_) => "Linear shutdown".to_string(),
-            TransientEvent::PumpLinearStartup(_,_,_) => "Linear startup".to_string(),
+            TransientEvent::PumpShutdown(_,_,_) => "Linear shutdown".to_string(),
+            TransientEvent::PumpStartup(_,_,_,_) => "Linear startup".to_string(),
         }
     }
 
@@ -35,8 +35,8 @@ impl TransientEvent {
             TransientEvent::None => 0.0,
             TransientEvent::InstantaneousChange(_, time) => time.0,
             TransientEvent::ValveClosure(_, event_time, _) => event_time.0,
-            TransientEvent::PumpLinearShutdown(event_time, _) => event_time.0,
-            TransientEvent::PumpLinearStartup(_, event_time, _) => event_time.0,
+            TransientEvent::PumpShutdown(_,event_time, _) => event_time.0,
+            TransientEvent::PumpStartup(_,_, event_time, _) => event_time.0,
         }
     }
 
@@ -44,9 +44,9 @@ impl TransientEvent {
         match self {
             TransientEvent::None => 0.0,
             TransientEvent::InstantaneousChange(value, _) => value.0,
-            TransientEvent::ValveClosure(exponent, _, _) => exponent.0,
-            TransientEvent::PumpLinearShutdown(_, shutdown_time) => shutdown_time.0,
-            TransientEvent::PumpLinearStartup(value, _, _) => value.0,
+            TransientEvent::ValveClosure(exponent,_,_) => exponent.0,
+            TransientEvent::PumpShutdown(exponent,_,_) => exponent.0,
+            TransientEvent::PumpStartup(value,_,_,_) => value.0,
         }
     }
 
@@ -55,8 +55,8 @@ impl TransientEvent {
             TransientEvent::None => 0.0,
             TransientEvent::InstantaneousChange(_, _) => 0.0,
             TransientEvent::ValveClosure(_, _, closing_time) => closing_time.0,
-            TransientEvent::PumpLinearShutdown(_, shutdown_time) => shutdown_time.0,
-            TransientEvent::PumpLinearStartup(_, _, startup_time) => startup_time.0,
+            TransientEvent::PumpShutdown(_,_, shutdown_time) => shutdown_time.0,
+            TransientEvent::PumpStartup(_,_,_,startup_time) => startup_time.0,
         }
     }
 
@@ -70,16 +70,6 @@ impl TransientEvent {
                     value.0
                 }
             },
-            /*TransientEvent::ValveClosure( exponent, event_time, closing_time) => {
-                if time < event_time.0 {
-                    steady_open
-                } else if time < closing_time.0 {
-                    let tau = 1.0 - (time - event_time.0) / (closing_time.0 - event_time.0);
-                    steady_open * tau.powf( exponent.0 )
-                } else {
-                    0.0
-                }
-            },*/
             TransientEvent::ValveClosure( exponent, event_time, closing_time) => {
                 if time < event_time.0 {
                     steady_open
@@ -90,8 +80,8 @@ impl TransientEvent {
                     0.0
                 }
             },
-            TransientEvent::PumpLinearShutdown(_, _) => 0.0,
-            TransientEvent::PumpLinearStartup(_, _, _) => 0.0,
+            TransientEvent::PumpShutdown(_,_,_) => 0.0,
+            TransientEvent::PumpStartup(_,_,_,_) => 0.0,
         }
     }
 
@@ -100,22 +90,22 @@ impl TransientEvent {
             TransientEvent::None => steady_speed,
             TransientEvent::InstantaneousChange(_,_) => steady_speed, //TODO: implement instantaneous change
             TransientEvent::ValveClosure(_,_,_) => steady_speed,
-            TransientEvent::PumpLinearShutdown( event_time, shutdown_time) => {
+            TransientEvent::PumpShutdown(exponent, event_time, shutdown_time) => {
                 if time < event_time.0 {
                     steady_speed
                 } else if time < event_time.0 + shutdown_time.0 {
                     let tau = 1.0 - (time - event_time.0) / shutdown_time.0;
-                    steady_speed * tau
+                    steady_speed * tau.powf( exponent.0 )
                 } else {
                     0.0
                 }
             },
-            TransientEvent::PumpLinearStartup( value, event_time, startup_time) => {
+            TransientEvent::PumpStartup( value, exponent, event_time, startup_time) => {
                 if time < event_time.0 {
                     0.0
                 } else if time < event_time.0 + startup_time.0 {
                     let tau = (time - event_time.0) / startup_time.0;
-                    value.0 * tau
+                    value.0 * tau.powf( exponent.0 )
                 } else {
                     value.0
                 }

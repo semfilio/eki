@@ -163,9 +163,10 @@ fn pump_linear_shutdown() {
 
     let new_pump = Pump::new( node_from, node_to );
     let mut pump = Edge::Pump( new_pump.clone() );
+    let exponent = Value( 1.0 );  // Linear closing
     let event_time = Time( 0.0 );
     let shutdown_time = Time( 10.0 );
-    let transient_event = TransientEvent::PumpLinearShutdown( event_time.clone(), shutdown_time.clone() );
+    let transient_event = TransientEvent::PumpShutdown( exponent, event_time.clone(), shutdown_time.clone() );
     pump.add_event( transient_event );
     network.add_edge( pump );
 
