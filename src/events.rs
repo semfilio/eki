@@ -82,7 +82,7 @@ impl TransientEvent {
     pub fn pump_speed(&self, time: f64, steady_speed: f64 ) -> f64 {
         match self {
             TransientEvent::None => steady_speed,
-            TransientEvent::InstantaneousChange(_,_) => steady_speed,
+            TransientEvent::InstantaneousChange(_,_) => steady_speed, //TODO: implement instantaneous change
             TransientEvent::ValveClosure(_,_,_) => steady_speed,
             TransientEvent::PumpLinearShutdown( event_time, shutdown_time) => {
                 if time < event_time.0 {
