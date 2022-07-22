@@ -70,11 +70,21 @@ impl TransientEvent {
                     value.0
                 }
             },
-            TransientEvent::ValveClosure( exponent, event_time, closing_time) => {
+            /*TransientEvent::ValveClosure( exponent, event_time, closing_time) => {
                 if time < event_time.0 {
                     steady_open
                 } else if time < closing_time.0 {
                     let tau = 1.0 - (time - event_time.0) / (closing_time.0 - event_time.0);
+                    steady_open * tau.powf( exponent.0 )
+                } else {
+                    0.0
+                }
+            },*/
+            TransientEvent::ValveClosure( exponent, event_time, closing_time) => {
+                if time < event_time.0 {
+                    steady_open
+                } else if time < event_time.0 + closing_time.0 {
+                    let tau = 1.0 - (time - event_time.0) / (closing_time.0);
                     steady_open * tau.powf( exponent.0 )
                 } else {
                     0.0
