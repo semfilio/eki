@@ -10,6 +10,7 @@ pub enum TransientEvent {
     InstantaneousChange(Value, Time),
     ValveClosure(Value, Time, Time),
     PumpLinearShutdown(Time, Time),
+    PumpLinearStartup(Value, Time, Time),
 }
 
 impl Default for TransientEvent {
@@ -25,6 +26,7 @@ impl TransientEvent {
             TransientEvent::InstantaneousChange(_, _) => "Instantaneous change".to_string(),
             TransientEvent::ValveClosure(_, _, _) => "Valve closure".to_string(),
             TransientEvent::PumpLinearShutdown(_,_) => "Linear shutdown".to_string(),
+            TransientEvent::PumpLinearStartup(_,_,_) => "Linear startup".to_string(),
         }
     }
 
@@ -34,6 +36,7 @@ impl TransientEvent {
             TransientEvent::InstantaneousChange(_, time) => time.0,
             TransientEvent::ValveClosure(_, event_time, _) => event_time.0,
             TransientEvent::PumpLinearShutdown(event_time, _) => event_time.0,
+            TransientEvent::PumpLinearStartup(_, event_time, _) => event_time.0,
         }
     }
 
@@ -43,6 +46,7 @@ impl TransientEvent {
             TransientEvent::InstantaneousChange(value, _) => value.0,
             TransientEvent::ValveClosure(exponent, _, _) => exponent.0,
             TransientEvent::PumpLinearShutdown(_, shutdown_time) => shutdown_time.0,
+            TransientEvent::PumpLinearStartup(value, _, _) => value.0,
         }
     }
 
@@ -52,6 +56,7 @@ impl TransientEvent {
             TransientEvent::InstantaneousChange(_, _) => 0.0,
             TransientEvent::ValveClosure(_, _, closing_time) => closing_time.0,
             TransientEvent::PumpLinearShutdown(_, shutdown_time) => shutdown_time.0,
+            TransientEvent::PumpLinearStartup(_, _, startup_time) => startup_time.0,
         }
     }
 
@@ -75,7 +80,8 @@ impl TransientEvent {
                     0.0
                 }
             },
-            TransientEvent::PumpLinearShutdown(_event_time, _shutdown_time) => 0.0,
+            TransientEvent::PumpLinearShutdown(_, _) => 0.0,
+            TransientEvent::PumpLinearStartup(_, _, _) => 0.0,
         }
     }
 
@@ -92,6 +98,16 @@ impl TransientEvent {
                     steady_speed * tau
                 } else {
                     0.0
+                }
+            },
+            TransientEvent::PumpLinearStartup( value, event_time, startup_time) => {
+                if time < event_time.0 {
+                    0.0
+                } else if time < event_time.0 + startup_time.0 {
+                    let tau = (time - event_time.0) / startup_time.0;
+                    value.0 * tau
+                } else {
+                    value.0
                 }
             },
         }
