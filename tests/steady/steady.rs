@@ -10,6 +10,7 @@ mod three_reservoirs;
 mod pipe;
 mod valve;
 mod pump;
+mod bend;
 
 #[test]
 fn default() {

@@ -3,6 +3,7 @@ use crate::edges::{
     pipe::Pipe,
     valve::Valve,
     pump::Pump,
+    bend::Bend,
 };
 use crate::fluid::Fluid;
 use crate::events::TransientEvent;
@@ -12,7 +13,8 @@ use crate::utility;
 pub enum Edge {
     Pipe(Pipe),    
     Valve(Valve),
-    Pump(Pump),   
+    Pump(Pump), 
+    Bend(Bend),  
 }
 
 impl std::fmt::Display for Edge {
@@ -21,6 +23,7 @@ impl std::fmt::Display for Edge {
             Edge::Pipe(_edge) => write!(f, "Pipe"),
             Edge::Valve(_edge) => write!(f, "Valve"),
             Edge::Pump(_edge) => write!(f, "Pump"),
+            Edge::Bend(_edge) => write!(f, "Bend"),
         }
     }
 }
@@ -31,6 +34,7 @@ impl Edge {
             Edge::Pipe(edge) => edge.from.clone(),
             Edge::Valve(edge) => edge.from.clone(),
             Edge::Pump(edge) => edge.from.clone(),
+            Edge::Bend(edge) => edge.from.clone(),
         }
     }
 
@@ -39,6 +43,7 @@ impl Edge {
             Edge::Pipe(edge) => edge.to.clone(),
             Edge::Valve(edge) => edge.to.clone(),
             Edge::Pump(edge) => edge.to.clone(),
+            Edge::Bend(edge) => edge.to.clone(),
         }
     }
 
@@ -47,6 +52,7 @@ impl Edge {
             Edge::Pipe(edge) => (edge.from.id(), edge.to.id()),
             Edge::Valve(edge) => (edge.from.id(), edge.to.id()),
             Edge::Pump(edge) => (edge.from.id(), edge.to.id()),
+            Edge::Bend(edge) => (edge.from.id(), edge.to.id()),
         }
     }
 
@@ -55,6 +61,7 @@ impl Edge {
             Edge::Pipe(edge) => &mut edge.mass_flow,
             Edge::Valve(edge) => &mut edge.mass_flow,
             Edge::Pump(edge) => &mut edge.mass_flow,
+            Edge::Bend(edge) => &mut edge.mass_flow,
         }
     }
 
@@ -79,6 +86,16 @@ impl Edge {
             Edge::Pipe(edge) => Some(&mut edge.length),
             Edge::Valve(_edge) => None,
             Edge::Pump(_edge) => None,
+            Edge::Bend(_edge) => None,
+        }
+    }
+
+    pub fn radius(&mut self) -> Option<&mut f64> {
+        match self {
+            Edge::Pipe(_edge) => None,
+            Edge::Valve(_edge) => None,
+            Edge::Pump(_edge) => None,
+            Edge::Bend(edge) => Some(&mut edge.radius),
         }
     }
 
@@ -87,6 +104,7 @@ impl Edge {
             Edge::Pipe(edge) => &mut edge.diameter,
             Edge::Valve(edge) => &mut edge.diameter,
             Edge::Pump(edge) => &mut edge.diameter,     // Impeller diameter
+            Edge::Bend(edge) => &mut edge.diameter,
         }
     }
 
@@ -95,6 +113,7 @@ impl Edge {
             Edge::Pipe(edge) => edge.area(),
             Edge::Valve(edge) => edge.area(),
             Edge::Pump(edge) => edge.area(),
+            Edge::Bend(edge) => edge.area(),
         }
     }
 
@@ -103,6 +122,7 @@ impl Edge {
             Edge::Pipe(edge) => Some(&mut edge.roughness),
             Edge::Valve(_edge) => None,
             Edge::Pump(_edge) => None,
+            Edge::Bend(edge) => Some(&mut edge.roughness),
         }
     }
 
@@ -111,6 +131,7 @@ impl Edge {
             Edge::Pipe(edge) => &mut edge.thickness,
             Edge::Valve(edge) => &mut edge.thickness,
             Edge::Pump(edge) => &mut edge.thickness,
+            Edge::Bend(edge) => &mut edge.thickness,
         }
     }
 
@@ -119,6 +140,7 @@ impl Edge {
             Edge::Pipe(edge) => &mut edge.youngs_modulus,
             Edge::Valve(edge) => &mut edge.youngs_modulus,
             Edge::Pump(edge) => &mut edge.youngs_modulus,
+            Edge::Bend(edge) => &mut edge.youngs_modulus,
         }
     }
 
@@ -128,6 +150,7 @@ impl Edge {
             Edge::Pipe(_edge) => None,
             Edge::Valve(edge) => Some(&mut edge.open_percent),
             Edge::Pump(_edge) => None,
+            Edge::Bend(_edge) => None,
         }
     }
 
@@ -136,6 +159,7 @@ impl Edge {
             Edge::Pipe(_edge) => None,
             Edge::Valve(_edge) => None,
             Edge::Pump(edge) => Some(&mut edge.speed),
+            Edge::Bend(_edge) => None,
         }
     }
 
@@ -164,6 +188,7 @@ impl Edge {
             Edge::Pipe(_edge) => None,
             Edge::Valve(edge) => Some(&mut edge.k),
             Edge::Pump(_edge) => None,
+            Edge::Bend(_edge) => None,
         }
     }
 
@@ -172,6 +197,7 @@ impl Edge {
             Edge::Pipe(_edge) => None,
             Edge::Valve(edge) => Some( edge.k( step ) ),
             Edge::Pump(_edge) => None,
+            Edge::Bend(_edge) => None, //TODO: Bend pressure loss coefficient
         }
     }
 
@@ -180,6 +206,7 @@ impl Edge {
             Edge::Pipe(edge) => edge.wave_speed( fluid ),
             Edge::Valve(edge) => edge.wave_speed( fluid ),
             Edge::Pump(edge) => edge.wave_speed( fluid ),
+            Edge::Bend(edge) => edge.wave_speed( fluid ),
         }
     }
 
@@ -199,6 +226,7 @@ impl Edge {
             Edge::Pipe(edge) => edge.resistance( flow_rate, nu, g ),
             Edge::Valve(edge) => edge.resistance( flow_rate, nu, g, step ),
             Edge::Pump(edge) => edge.resistance( flow_rate, nu, g, step ),
+            Edge::Bend(edge) => edge.resistance( flow_rate, nu, g ),
         }
     }
 
@@ -207,6 +235,7 @@ impl Edge {
             Edge::Pipe(edge) => edge.k_laminar(nu),
             Edge::Valve(edge) => edge.k_laminar(nu),
             Edge::Pump(edge) => edge.k_laminar(nu),
+            Edge::Bend(edge) => edge.k_laminar(nu),
         }
     }
 
@@ -215,6 +244,7 @@ impl Edge {
             Edge::Pipe(edge) => edge.darcy_approx(head_loss, g),
             Edge::Valve(edge) => edge.darcy_approx(head_loss, g),
             Edge::Pump(edge) => edge.darcy_approx(head_loss, g),
+            Edge::Bend(edge) => edge.darcy_approx(head_loss, g),
         }
     }
 
@@ -232,6 +262,7 @@ impl Edge {
             Edge::Pipe(_edge) => {},
             Edge::Valve(edge) => edge.add_transient_value( time ), 
             Edge::Pump(edge) => edge.add_transient_value( time ),
+            Edge::Bend(_edge) => {},
         }
     }
 
@@ -240,6 +271,7 @@ impl Edge {
             Edge::Pipe(_edge) => None,
             Edge::Valve(edge) => Some(&mut edge.events),
             Edge::Pump(edge) => Some(&mut edge.events),
+            Edge::Bend(_edge) => None,
         }
     }
 
@@ -248,6 +280,7 @@ impl Edge {
             Edge::Pipe(_edge) => {},
             Edge::Valve(edge) => edge.events.push(event),
             Edge::Pump(edge) => edge.events.push(event),
+            Edge::Bend(_edge) => {},
         }
     }
 
@@ -256,6 +289,7 @@ impl Edge {
             Edge::Pipe(_edge) => None,
             Edge::Valve(edge) => edge.events.pop(),
             Edge::Pump(edge) => edge.events.pop(),
+            Edge::Bend(_edge) => None,
         }
     }
 
@@ -266,6 +300,7 @@ impl Edge {
             Edge::Pipe(edge) => edge.selected = select,
             Edge::Valve(edge) => edge.selected = select,
             Edge::Pump(edge) => edge.selected = select,
+            Edge::Bend(edge) => edge.selected = select,
         }
     }
 
@@ -274,6 +309,7 @@ impl Edge {
             Edge::Pipe(edge) => edge.selected,
             Edge::Valve(edge) => edge.selected,
             Edge::Pump(edge) => edge.selected,
+            Edge::Bend(edge) => edge.selected,
         }
     }
 
@@ -282,6 +318,7 @@ impl Edge {
             Edge::Pipe(edge) => edge.from = node,
             Edge::Valve(edge) => edge.from = node,
             Edge::Pump(edge) => edge.from = node,
+            Edge::Bend(edge) => edge.from = node,
         }
     }
 
@@ -290,6 +327,7 @@ impl Edge {
             Edge::Pipe(edge) => edge.to = node,
             Edge::Valve(edge) => edge.to = node,
             Edge::Pump(edge) => edge.to = node,
+            Edge::Bend(edge) => edge.to = node,
         }
     }
 }

@@ -1,6 +1,6 @@
 [package]
 name = "eki"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["anthonyoneill <ajoneill@protonmail.com>"]
 edition = "2021"
 description = "Eki is a solver for steady and transient flow in fluid networks."
