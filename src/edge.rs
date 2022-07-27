@@ -99,6 +99,15 @@ impl Edge {
         }
     }
 
+    pub fn angle(&mut self) -> Option<&mut f64> {
+        match self {
+            Edge::Pipe(_edge) => None,
+            Edge::Valve(_edge) => None,
+            Edge::Pump(_edge) => None,
+            Edge::Bend(edge) => Some(&mut edge.angle),
+        }
+    }
+
     pub fn diameter(&mut self) -> &mut f64 {
         match self {
             Edge::Pipe(edge) => &mut edge.diameter,
