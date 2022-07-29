@@ -3,6 +3,7 @@
 //! `eki` is a solver for steady and transient flow in fluid networks.
 
 pub mod fluid;
+pub mod fluids;
 pub mod node;
 pub mod nodes;
 pub mod edge;

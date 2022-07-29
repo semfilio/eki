@@ -36,7 +36,7 @@ fn resistance() {
 
 #[test]
 fn basic_steady_pump() {
-    let fluid = Fluid::new( 998.162, 1.1375e-6, 2.15e9 );
+    let fluid = Fluid::new_basic( 998.162, 1.1375e-6, 2.15e9 );
     let mut graph = Graph::new();
 
     let elevation = 100.0;

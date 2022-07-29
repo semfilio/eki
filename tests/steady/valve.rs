@@ -9,7 +9,7 @@ use eki::solver::Solver;
 #[test]
 fn steady_valve() {
     let mut graph = Graph::new();
-    let fluid = Fluid::new( 997.0, 1.1375e-6, 2.15e9 );
+    let fluid = Fluid::new_basic( 997.0, 1.1375e-6, 2.15e9 );
     let mut solver = Solver::default();
     let rho_g = fluid.density() * solver.gravity();
     

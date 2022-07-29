@@ -50,7 +50,7 @@ fn pipe_bend_pipe() {
     let edge = Edge::Pipe( Pipe::new( node_c2, node_to ) );
     graph.add_edge( edge );
 
-    let fluid = Fluid::new( 999.7, 1.3063e-6, 2.15e9 ); // Water @ 10 degrees C
+    let fluid = Fluid::new_basic( 999.7, 1.3063e-6, 2.15e9 ); // Water @ 10 degrees C
     let mut solver = Solver::default();
     let result = solver.solve_steady( &mut graph, &fluid, true );
     assert!( result.is_ok() && !result.is_err() );

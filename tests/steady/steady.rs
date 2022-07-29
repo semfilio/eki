@@ -60,7 +60,7 @@ fn single_pipe() {
     graph.add_node( node_to.clone() );
     let edge = Edge::Pipe( Pipe::new( node_from, node_to ) );
     graph.add_edge( edge );
-    let fluid = Fluid::new( 997.0, 1.1375e-6, 2.15e9 );
+    let fluid = Fluid::new_basic( 997.0, 1.1375e-6, 2.15e9 );
     let mut solver = Solver::default();
     let result = solver.solve_steady( &mut graph, &fluid, true );
     assert!( result.is_ok() && !result.is_err() );
@@ -82,7 +82,7 @@ fn initial_guess() {
     
     let edge = Edge::Pipe( Pipe::new( node_from, node_to ) );
     graph.add_edge( edge );
-    let fluid = Fluid::new( 997.0, 1.1375e-6, 2.15e9 );
+    let fluid = Fluid::new_basic( 997.0, 1.1375e-6, 2.15e9 );
     let mut solver = Solver::default();
     let create_guess = true;
     let result = solver.solve_steady( &mut graph, &fluid, create_guess );

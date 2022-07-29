@@ -81,7 +81,7 @@ impl Pump {
         theta
     }
 
-    //TODO interpolation utility function
+    //TODO interpolation utility function -> split head and torque data into separate vectors
     pub fn f_h(&self, theta: f64 ) -> f64 {
         let mut xlower = self.head_data[0].0;
         let mut xupper = self.head_data[1].0;
