@@ -105,3 +105,18 @@ pub fn relative_error( x: f64, x_approx: f64 ) -> f64 {
     let rel = 1.0 - ( x_approx / x );
     rel.abs()
 }
+
+pub fn interpolate( x: f64, x_data: &Vec<f64>, y_data: &Vec<f64> ) -> f64 {
+    //TODO check Vecs are the same size
+    let n = x_data.len();
+    let mut i = 0;
+    while x > x_data[i] && i < n-1 {
+        i += 1;
+    }
+    let x_1 = x_data[i-1];
+    let x_2 = x_data[i];
+    let y_1 = y_data[i-1];
+    let y_2 = y_data[i];
+    let slope = ( y_2 - y_1 ) / ( x_2 - x_1 );
+    y_1 + slope * ( x - x_1 )
+}

@@ -18,7 +18,7 @@ fn example3_1() {
     *solver.g() = 9.806;
     *solver.dt() = dt;
     let mut network = Graph::new();
-    let fluid = Fluid::new( 997.0, 1.1375e-6, 2.15e9 );
+    let fluid = Fluid::new_basic( 997.0, 1.1375e-6, 2.15e9 );
 
     let reservoir_head = 150.0;
     let reservoir_pressure = fluid.density() * solver.gravity() * reservoir_head;

@@ -1,14 +1,19 @@
 use eki::fluid::Fluid;
+use eki::fluids::{
+    water::Water,
+};
 use eki::node::Node;
 use eki::nodes::{ pressure::Pressure, connection::Connection, flow::Flow };
 use eki::edge::Edge;
 use eki::edges::pipe::Pipe;
 use eki::graph::Graph;
 use eki::solver::Solver;
+use eki::utility;
 
 #[test]
 fn solve() {
-    let fluid = Fluid::new( 999.7, 1.3063e-6, 2.15e9 ); // Water @ 10 degrees C
+    let fluid = Fluid::Water( Water::new( 273.15 + 10.0 ) );    // Water @ 10 degrees C
+    //let fluid = Fluid::new_basic( 999.7, 1.3063e-6, 2.15e9 ); // Water @ 10 degrees C
     let mut graph = Graph::new();
 
     let node1 = Node::Pressure( Pressure::new_elevation( 1, 85.0 ) );
@@ -43,15 +48,18 @@ fn solve() {
 
     // Flow rate from highest reservoir
     let volume_flow = *graph.edges()[1].steady_mass_flow() / fluid.density();
-    assert!( ( volume_flow - 0.1022 ).abs() < 1.0e-4 );
+    assert!( utility::relative_error( 0.1023, volume_flow ) < 0.005 ); // < 0.5% error (published)
+    assert!( ( volume_flow - 0.1022 ).abs() < 1.0e-4 ); // FD
 
     // Flow rate from middle reservoir
     let volume_flow = *graph.edges()[0].steady_mass_flow() / fluid.density();
-    assert!( ( volume_flow - 0.02 ).abs() < 1.0e-2 );
+    assert!( utility::relative_error( 0.02, volume_flow ) < 0.005 ); // < 0.5% error (published)
+    assert!( ( volume_flow - 0.02 ).abs() < 1.0e-2 ); // FD
 
     // Flow rate from lowest reservoir
     let volume_flow = *graph.edges()[2].steady_mass_flow() / fluid.density();
-    assert!( ( volume_flow + 0.0621 ).abs() < 1.0e-4 );
+    assert!( utility::relative_error( -0.0622, volume_flow ) < 0.005 ); // < 0.5% error (published)
+    assert!( ( volume_flow + 0.0621 ).abs() < 1.0e-4 ); // FD
 
     // External flow demand
     let volume_flow = *graph.edges()[3].steady_mass_flow() / fluid.density();

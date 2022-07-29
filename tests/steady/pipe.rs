@@ -11,7 +11,7 @@ use eki::utility;
 #[test]
 fn two_pipes() {
     let mut graph = Graph::new();
-    let fluid = Fluid::new( 999.7, 1.3063e-6, 2.15e9 ); // Water @ 10 degrees C
+    let fluid = Fluid::new_basic( 999.7, 1.3063e-6, 2.15e9 ); // Water @ 10 degrees C
     let mut solver = Solver::default(); 
 
     let pressure1 = fluid.density() * solver.gravity() * 20.0;
@@ -51,7 +51,7 @@ fn two_pipes() {
 #[test]
 fn turbulent_water() {
     let mut graph = Graph::new();
-    let fluid = Fluid::new( 998.2, 1.0034e-6, 2.15e9 ); // Water at 68F = 20C
+    let fluid = Fluid::new_basic( 998.2, 1.0034e-6, 2.15e9 ); // Water at 68F = 20C
     let flow_in = 500.0 * 0.000063141414 * fluid.density(); // 500 usgpm
     let node_from = Node::Flow( Flow::new_with_value( 1, flow_in ) );
     graph.add_node( node_from.clone() );
@@ -105,7 +105,7 @@ fn turbulent_oil() {
     let density = specific_gravity * 1000.0;
     let nu = 1.107748845e-5; 
     let bulk = 1.66e9;
-    let fluid = Fluid::new( density, nu, bulk ); // Oil at 68F = 20C
+    let fluid = Fluid::new_basic( density, nu, bulk ); // Oil at 68F = 20C
     let flow_in = 84.0 * 0.000063141414 * fluid.density(); // 84 usgpm
     let node_from = Node::Flow( Flow::new_with_value( 1, flow_in ) );
     graph.add_node( node_from.clone() );
