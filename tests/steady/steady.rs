@@ -11,6 +11,7 @@ mod pipe;
 mod valve;
 mod pump;
 mod bend;
+mod size_change;
 
 #[test]
 fn default() {

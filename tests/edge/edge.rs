@@ -14,8 +14,8 @@ fn pipe() {
     assert_eq!( *edge.length().unwrap(), 10.0 );
     assert_eq!( *edge.diameter(), 52.5e-3 );
     assert_eq!( *edge.roughness().unwrap(), 0.05e-3 );
-    assert_eq!( *edge.thickness(), 0.005 );
-    assert_eq!( *edge.youngs_modulus(), 2.0e11 );
+    assert_eq!( *edge.thickness().unwrap(), 0.005 );
+    assert_eq!( *edge.youngs_modulus().unwrap(), 2.0e11 );
 }
 
 #[test]
@@ -25,8 +25,8 @@ fn valve() {
     let mut edge = Edge::Valve( Valve::new( node_from, node_to ) );
     assert_eq!( edge.id(), (1,2) );
     assert_eq!( *edge.diameter(), 52.5e-3 );
-    assert_eq!( *edge.thickness(), 0.005 );
-    assert_eq!( *edge.youngs_modulus(), 2.0e11 );
+    assert_eq!( *edge.thickness().unwrap(), 0.005 );
+    assert_eq!( *edge.youngs_modulus().unwrap(), 2.0e11 );
     assert_eq!( *edge.open_percent().unwrap(), vec![ 1.0 ] );
     assert_eq!( edge.pressure_loss_coefficient( 0 ).unwrap(), 0.25 );
 }
