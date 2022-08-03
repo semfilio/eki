@@ -25,6 +25,13 @@ impl Default for Fluid {
 }
 
 impl Fluid {
+    pub fn text(&self) -> String {
+        match self {
+            Fluid::BasicFluid(_) => "Basic Fluid".to_string(),
+            Fluid::Water(_) => "Water".to_string(),
+        }
+    }
+
     pub fn new_basic( rho: f64, nu: f64, bulk: f64 ) -> Self {
         Fluid::BasicFluid( BasicFluid::new(rho, nu, bulk) )
     }
