@@ -3,6 +3,7 @@ use crate::nodes::{
     flow::Flow,
     connection::Connection,
     hidden::Hidden,
+    tank::Tank,
 };
 use crate::location::Location;
 use crate::utility;
@@ -15,6 +16,7 @@ pub enum Node {
     Flow(Flow),                 // Assigned Boundary Flow
     Connection(Connection),     // Connection Node
     Hidden(Hidden),             // Hidden Node
+    Tank(Tank),                 // Tank (surge tank)
 }
 
 impl Default for Node {
@@ -30,6 +32,7 @@ impl std::fmt::Display for Node {
             Node::Flow(_node) => write!(f, "Flow"),
             Node::Connection(_node) => write!(f, "Connection"),
             Node::Hidden(_node) => write!(f, "Hidden"),
+            Node::Tank(_node) => write!(f, "Tank"),
         }
     }
 }
@@ -42,6 +45,7 @@ impl Node {
             Node::Flow(node) => node.id,
             Node::Connection(node) => node.id,
             Node::Hidden(node) => node.id,
+            Node::Tank(node) => node.id,
         }
     }
 
@@ -57,12 +61,28 @@ impl Node {
         matches!(self, Node::Flow(_node))  
     }
 
+    pub fn is_tank(&self) -> bool {
+        matches!(self, Node::Tank(_node))  
+    }
+
+    //TODO this should probably return an option
+    pub fn area(&self) -> f64 {
+        match self {
+            Node::Pressure(_node) => 0.0,
+            Node::Flow(_node) => 0.0,
+            Node::Connection(_node) => 0.0,
+            Node::Hidden(_node) => 0.0,
+            Node::Tank(node) => node.area(),
+        }
+    }
+
     pub fn elevation(&mut self) -> &mut f64 {
         match self {
             Node::Pressure(node) => &mut node.elevation,
             Node::Flow(node) => &mut node.elevation,
             Node::Connection(node) => &mut node.elevation,
             Node::Hidden(node) => &mut node.elevation, //TODO should be None
+            Node::Tank(node) => &mut node.elevation,
         }
     }
 
@@ -72,6 +92,7 @@ impl Node {
             Node::Flow(node) => &mut node.pressure,
             Node::Connection(node) => &mut node.pressure,
             Node::Hidden(node) => &mut node.pressure,
+            Node::Tank(node) => &mut node.pressure,
         }
     }
 
@@ -89,6 +110,7 @@ impl Node {
             Node::Flow(node) => &mut node.consumption,
             Node::Connection(node) => &mut node.consumption,
             Node::Hidden(node) => &mut node.consumption,
+            Node::Tank(node) => &mut node.consumption,
         }
     }
 
@@ -128,6 +150,7 @@ impl Node {
             Node::Flow(node) => Some(&mut node.events),
             Node::Connection(_node) => None,
             Node::Hidden(_node) => None,
+            Node::Tank(_node) => None,
         }
     }
 
@@ -137,6 +160,7 @@ impl Node {
             Node::Flow(node) => node.events.push(event),
             Node::Connection(_node) => (),
             Node::Hidden(_node) => (),
+            Node::Tank(_node) => (),
         }
     }
 
@@ -146,6 +170,7 @@ impl Node {
             Node::Flow(node) => node.events.pop(),
             Node::Connection(_node) => None,
             Node::Hidden(_node) => None,
+            Node::Tank(_node) => None,
         }
     }
 
@@ -156,6 +181,7 @@ impl Node {
             Node::Flow(node) => node.create_transient_values( tnodes ),
             Node::Connection(node) => node.create_transient_values( tnodes ),
             Node::Hidden(_node) => (),
+            Node::Tank(_node) => (),
         }
     }
 
@@ -165,6 +191,7 @@ impl Node {
             Node::Flow(node) => node.add_transient_value( time ),
             Node::Connection(_node) => {},
             Node::Hidden(_node) => {},
+            Node::Tank(_node) => {},
         }
     }
 
@@ -174,6 +201,7 @@ impl Node {
             Node::Flow(node) => node.id = id,
             Node::Connection(node) => node.id = id,
             Node::Hidden(node) => node.id = id,
+            Node::Tank(node) => node.id = id,
         }
     }
 
@@ -183,6 +211,7 @@ impl Node {
             Node::Flow(node) => node.consumption.push(value),
             Node::Connection(_node) => {},
             Node::Hidden(_node) => {},
+            Node::Tank(_node) => {},
         }
     }
 
@@ -192,6 +221,7 @@ impl Node {
             Node::Flow(node) => node.selected = selected,
             Node::Connection(node) => node.selected = selected,
             Node::Hidden(node) => node.selected = selected,
+            Node::Tank(node) => node.selected = selected,
         }
     }
 
@@ -201,6 +231,7 @@ impl Node {
             Node::Flow(node) => node.selected,
             Node::Connection(node) => node.selected,
             Node::Hidden(node) => node.selected,
+            Node::Tank(node) => node.selected,
         }
     }
 
@@ -214,6 +245,7 @@ impl Node {
             Node::Flow(node) => node.loc,
             Node::Connection(node) => node.loc,
             Node::Hidden(node) => node.loc,
+            Node::Tank(node) => node.loc,
         }
     }
 
@@ -223,6 +255,7 @@ impl Node {
             Node::Flow(node) => node.r,
             Node::Connection(node) => node.r,
             Node::Hidden(node) => node.r,
+            Node::Tank(node) => node.r,
         }
     }
 
@@ -239,6 +272,7 @@ impl Node {
             Node::Flow(node) => node.loc = Location::new( x, y ),
             Node::Connection(node) => node.loc = Location::new( x, y ),
             Node::Hidden(node) => node.loc = Location::new( x, y ),
+            Node::Tank(node) => node.loc = Location::new( x, y ),
         }
     }
 
@@ -248,6 +282,7 @@ impl Node {
             Node::Flow(node) => node.r = radius,
             Node::Connection(node) => node.r = radius,
             Node::Hidden(node) => node.r = radius,
+            Node::Tank(node) => node.r = radius,
         }
     }
 

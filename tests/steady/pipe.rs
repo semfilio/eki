@@ -1,5 +1,8 @@
 use std::f64::consts::PI;
 use eki::fluid::Fluid;
+use eki::fluids::{
+    water::Water,
+};
 use eki::node::Node;
 use eki::nodes::{ pressure::Pressure, flow::Flow, connection::Connection };
 use eki::edge::Edge;
@@ -11,7 +14,7 @@ use eki::utility;
 #[test]
 fn two_pipes() {
     let mut graph = Graph::new();
-    let fluid = Fluid::new_basic( 999.7, 1.3063e-6, 2.15e9 ); // Water @ 10 degrees C
+    let fluid = Fluid::Water( Water::new( 273.15 + 10.0 ) );    // Water @ 10 degrees C
     let mut solver = Solver::default(); 
 
     let pressure1 = fluid.density() * solver.gravity() * 20.0;
@@ -44,7 +47,7 @@ fn two_pipes() {
     assert!( (h2 - 10.33537514).abs() < 1.0e-8 );
 
     let q = *graph.edges()[0].steady_mass_flow() / fluid.density();
-    assert!( (q - 0.00239623).abs() < 1.0e-8 );
+    assert!( (q - 0.00239598).abs() < 1.0e-8 );
 }
 
 

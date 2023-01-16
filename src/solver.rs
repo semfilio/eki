@@ -246,14 +246,24 @@ impl Solver {
             continuity_residual -= kt.clone() * qbar.clone();
             let mut hdiff = hg.clone() - hn.clone();
             for i in 0..n {
-                hdiff[i] *= d_diag[i];
+                //hdiff[i] *= d_diag[i];
+                if network.nodes[i].is_tank() {
+                    hdiff[i] *= d_diag[i] + network.nodes[i].area();
+                } else {
+                    hdiff[i] *= d_diag[i];
+                }
             }
             continuity_residual -= invdt * hdiff;
             for i in 0..n {
                 for j in 0..m {
                     mat[i][j] = self.theta * kt[i][j];
                 }
-                mat[i][m+i] = invdt * d_diag[i];
+                //mat[i][m+i] = invdt * d_diag[i];
+                if network.nodes[i].is_tank() {
+                    mat[i][m+i] = invdt * ( d_diag[i] + network.nodes[i].area() );
+                } else {
+                    mat[i][m+i] = invdt * d_diag[i];
+                }
                 b[i] = continuity_residual[i];
             }
 

@@ -145,7 +145,7 @@ fn valve_closure() {
 
     let mass_flow = network.edges()[0].mass_flow().clone();
     assert!( mass_flow[2] < mass_flow[1] );
-    assert!( mass_flow[2].abs() < 1.0e-3 )
+    assert!( mass_flow[2].abs() < 1.0e-3 );
 
 }
 
