@@ -68,11 +68,36 @@ impl Node {
     //TODO this should probably return an option
     pub fn area(&self) -> f64 {
         match self {
-            Node::Pressure(_node) => 0.0,
-            Node::Flow(_node) => 0.0,
-            Node::Connection(_node) => 0.0,
-            Node::Hidden(_node) => 0.0,
             Node::Tank(node) => node.area(),
+            _ => 0.0,
+        }
+    }
+
+    pub fn diameter(&mut self) -> Option<&mut f64> {
+        match self {
+            Node::Tank(node) => Some( &mut node.diameter ),
+            _ => None,
+        }
+    }
+
+    pub fn z_init(&mut self) -> Option<&mut f64> {
+        match self {
+            Node::Tank(node) => Some( &mut node.z_init ),
+            _ => None,
+        }
+    }
+
+    pub fn z_max(&mut self) -> Option<&mut f64> {
+        match self {
+            Node::Tank(node) => Some( &mut node.z_max ),
+            _ => None,
+        }
+    }
+
+    pub fn z_min(&mut self) -> Option<&mut f64> {
+        match self {
+            Node::Tank(node) => Some( &mut node.z_min ),
+            _ => None,
         }
     }
 
@@ -148,9 +173,7 @@ impl Node {
         match self {
             Node::Pressure(node) => Some(&mut node.events),
             Node::Flow(node) => Some(&mut node.events),
-            Node::Connection(_node) => None,
-            Node::Hidden(_node) => None,
-            Node::Tank(_node) => None,
+            _ => None,
         }
     }
 
@@ -158,9 +181,7 @@ impl Node {
         match self {
             Node::Pressure(node) => node.events.push(event),
             Node::Flow(node) => node.events.push(event),
-            Node::Connection(_node) => (),
-            Node::Hidden(_node) => (),
-            Node::Tank(_node) => (),
+            _ => (),
         }
     }
 
@@ -168,9 +189,7 @@ impl Node {
         match self {
             Node::Pressure(node) => node.events.pop(),
             Node::Flow(node) => node.events.pop(),
-            Node::Connection(_node) => None,
-            Node::Hidden(_node) => None,
-            Node::Tank(_node) => None,
+            _ => None,
         }
     }
 
