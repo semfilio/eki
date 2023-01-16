@@ -69,7 +69,7 @@ pub fn laminar_guess( net: &Graph, fluid: &Fluid, g: f64 ) -> (Vec64, Vec64) {
     let mut consumption = Vec64::new( num_nodes, 0.0 );
     for mut bc in boundary_conditions {
         let node = net.index( bc.id() );
-        if bc.is_known_pressure() {
+        if bc.is_known_pressure() || bc.is_tank() {
             let pressure = *bc.steady_pressure();
             let elevation = *bc.elevation();
             let val = elevation + pressure / ( fluid.density() * g );
