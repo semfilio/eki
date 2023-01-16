@@ -165,7 +165,7 @@ impl Solver {
             }
             // Insert boundary conditions 
             for i in 0..n {
-                if network.nodes[i].is_known_pressure() {
+                if network.nodes[i].is_known_pressure() || network.nodes[i].is_tank() {
                     // Clear row
                     for k in 0..n+m {
                         mat[i][k] = 0.0;
