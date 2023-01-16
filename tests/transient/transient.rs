@@ -8,6 +8,7 @@ use eki::solver::{Solver, SolverType};
 
 mod streeter_and_wylie;
 mod events;
+mod surge_tank;
 
 #[test]
 fn initialise() {

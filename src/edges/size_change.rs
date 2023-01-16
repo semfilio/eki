@@ -8,7 +8,7 @@ pub struct SizeChange {
     pub from: Node,
     pub to: Node,
     pub mass_flow: Vec<f64>,        // [kg/s]
-    pub diameter: f64,              // From diamter [m]
+    pub diameter: f64,              // From diameter [m]
     pub beta: f64,                  // Ratio to diameter / from diameter (d_k / d_i) 
     pub width: f32,
     pub selected: bool,

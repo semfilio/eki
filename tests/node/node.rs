@@ -1,5 +1,10 @@
 use eki::node::Node;
-use eki::nodes::{ pressure::Pressure, flow::Flow, connection::Connection };
+use eki::nodes::{ 
+    pressure::Pressure, 
+    flow::Flow, 
+    connection::Connection,
+    tank::Tank, 
+};
 
 #[test]
 fn default() {
@@ -50,4 +55,14 @@ fn connection() {
     assert_eq!( *node.consumption(), vec![ 0.0 ] );
     assert_eq!( node.id(), 3 );
     assert_eq!( node.is_connection(), true );
+}
+
+#[test]
+fn tank() {
+    let mut node = Node::Tank( Tank::new( 4, 101325.0, 1000.0, 9.80665 ) );
+    assert_eq!( *node.elevation(), 0.0 );
+    assert_eq!( *node.pressure(), vec![ 106228.325 ] );
+    assert_eq!( *node.consumption(), vec![ 0.0 ] );
+    assert_eq!( node.id(), 4 );
+    assert_eq!( node.is_tank(), true );
 }
