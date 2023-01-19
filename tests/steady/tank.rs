@@ -57,8 +57,7 @@ fn tank_pipe_tank() {
     let fluid = Fluid::Water( Water::new( 273.15 + 10.0 ) );    // Water @ 10 degrees C
     let mut solver = Solver::default();
 
-    //TODO two tanks, with different initial fluid heights, connected by a pipe should have flow
-    // between them?
+    //Two tanks connected by a pipe, with different fluid heights, should have flow between them.
 
     let node_from = Node::Tank( Tank::new_with_values( 
         0, 
@@ -105,6 +104,8 @@ fn tank_pipe_tank_elevation() {
     let mut graph = Graph::new();
     let fluid = Fluid::Water( Water::new( 273.15 + 10.0 ) );    // Water @ 10 degrees C
     let mut solver = Solver::default();
+
+    //The flow between two tanks connected by a pipe can be eliminated if one is elevated. 
 
     let node_from = Node::Tank( Tank::new_with_values( 
         0, 
