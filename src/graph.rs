@@ -102,24 +102,24 @@ impl Graph {
     }
 
     // Return the matrix M = diag( g Aj Lj / 2 aj^2 ) 
-    pub fn m_diag(&mut self, fluid: &Fluid) -> Vec64 {
+    pub fn m_diag(&mut self, fluid: &Fluid, g: f64) -> Vec64 {
         let mut m = Vec64::new( self.num_edges(), 0.0 );
         for i in 0..self.num_edges() {
             let a: f64 = self.edges[i].wave_speed( fluid );
             let area = self.edges[i].area();
-            //TODO don't hard code g?
             if let Some(length) = self.edges[i].length() {
-                m[i] = 0.5 * 9.806 * area * (*length) / ( a * a );
+                m[i] = 0.5 * g * area * (*length) / ( a * a );
             } else {
-                m[i] = 0.5 * 9.806 * area / ( a * a );
+                //m[i] = 0.5 * g * area / ( a * a );
+                m[i] = 0.0;
             }
         }
         m
     }
 
-    fn mult_m_diag(&mut self, mut kmat: Mat64, fluid: &Fluid ) -> Mat64{
+    fn mult_m_diag(&mut self, mut kmat: Mat64, fluid: &Fluid, g: f64 ) -> Mat64{
         let m = self.num_edges();
-        let m_diag = self.m_diag( fluid );
+        let m_diag = self.m_diag( fluid, g );
         for j in 0..m {
             kmat[j] = m_diag[j] * kmat[j].clone();
         }
@@ -127,33 +127,18 @@ impl Graph {
     }
 
     // Return the diagonal matrix D = K+^T M K+ + K-^T M K- 
-    pub fn d_diag(&mut self, fluid: &Fluid ) -> Vec64 {
+    pub fn d_diag(&mut self, fluid: &Fluid, g: f64 ) -> Vec64 {
         let mut d = Vec64::new( self.num_nodes(), 0.0 );
         let ( mut kplus, mut kminus ) = ( self.kplus_matrix(), self.kminus_matrix() );
         let ( kplust, kminust ) = ( kplus.transpose(), kminus.transpose() );
-        kplus = self.mult_m_diag( kplus, fluid );
+        kplus = self.mult_m_diag( kplus, fluid, g );
         let plus = kplust * kplus;
-        kminus = self.mult_m_diag( kminus, fluid );
+        kminus = self.mult_m_diag( kminus, fluid, g );
         let minus = kminust * kminus;
         for i in 0..self.num_nodes() {
             d[i] = plus[i][i] + minus[i][i];
         }
         d
-    }
-
-    // Return the diagonal matrix B = diag( L_j / g A_j )
-    pub fn b_diag(&mut self) -> Vec64 {
-        let mut b = Vec64::new( self.num_edges(), 0.0 );
-        for j in 0..self.num_edges() {
-            let area = self.edges[j].area();
-            // TODO don't hard code g
-            if let Some(length) = self.edges[j].length() {
-                b[j] = (*length) / ( 9.806 * area );
-            } else {
-                b[j] = 1.0 / ( 9.806 * area );
-            }
-        }
-        b
     }
 
     // Return the vector of nodal consumptions (steady) [mdot]
@@ -224,29 +209,6 @@ impl Graph {
         }
         (q_guess, h_guess)
     }
-
-    //TODO do we need this ????
-    // Initialise the transient solution using the steady solution
-    /*pub fn initialise_transient(&mut self, tnodes: Vec<f64> ) {
-        let n = tnodes.len();
-        for mut node in self.nodes() {
-            //let length = if let Some(pressure) = node.pressure() { pressure.len() } else { n };
-            let length = node.pressure().len();
-            if n != length {
-                node.create_transient_values( &tnodes );
-                self.update_node( node );
-            }
-        }
-        for mut edge in self.edges() {
-            //let length = if let Some(mass_flow) = edge.mass_flow() { mass_flow.len() } else { n };
-            let length = edge.mass_flow().len();
-            if n != length {
-                edge.create_transient_values( &tnodes );
-                self.update_edge( edge );
-            }
-        }
-    }*/
-
     // Return the current solution as two vectors
     pub fn current_solution_qh(&mut self, rho: f64, g: f64, step: usize ) -> (Vec64, Vec64) {
         let (m, n) = ( self.num_edges(), self.num_nodes() );

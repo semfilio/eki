@@ -88,12 +88,12 @@ impl Bend {
         f * self.angle * rd + ( 0.1 + 2.4 * f ) * s + ( 6.6 * f * ( s.sqrt() + s ) / pow ) 
     }
 
-    pub fn resistance(&self, flow_rate: f64, nu: f64, g: f64 ) -> f64 {
-        if flow_rate == 0.0 {
+    pub fn resistance(&self, q: f64, dh: f64, nu: f64, g: f64 ) -> f64 {
+        if q == 0.0 {
             0.0
         } else {
-            let k = self.k( flow_rate, nu );
-            - k * flow_rate * flow_rate.abs() / ( 2. * g * self.area() * self.area() )
+            let k = self.k( q, nu );
+            - ( k * q * q.abs() / ( 2. * self.area() ) ) + g * self.area() * dh
         }
     }
 

@@ -63,24 +63,24 @@ impl SizeChange {
         ( 1. - beta.powi(2) ).powi(2)
     }
 
-    pub fn resistance(&self, flow_rate: f64, _nu: f64, g: f64 ) -> f64 {
+    pub fn resistance(&self, q: f64, dh: f64, _nu: f64, g: f64 ) -> f64 {
         let mut area = self.area();
         let k;
-        if flow_rate < 0.0 {
+        if q < 0.0 {
             area *= self.beta * self.beta;
             if self.beta < 1.0 {
                 k = - Self::k_expansion( self.beta );
             } else {
                 k = - Self::k_contraction( 1.0 / self.beta );
             }
-        } else { // flow_rate >= 0.0
+        } else { // q >= 0.0
             if self.beta < 1.0 {
                 k = Self::k_contraction( self.beta );
             } else {
                 k = Self::k_expansion( 1.0 / self.beta );
             }
         }
-        - k * flow_rate * flow_rate / ( 2. * g * area * area )
+        - ( k * q * q / ( 2. * area ) ) + g * area * dh
     }
 
     //TODO

@@ -153,14 +153,14 @@ impl Solver {
             // Fill the resistance Jacobian matrix in bottom left corner
             let khg = k.clone() * h_guess.clone();
             for j in 0..m {
-                let ( r, drdq ) = network.edges[j].r_drdq( q_guess[j], nu, self.g, 0 );
-                mat[n + j][j] = -drdq;
-                b[n + j] = r + khg[j];
+                mat[n + j][j] = - network.edges[j].drdq( q_guess[j], khg[j], nu, self.g, 0 );
+                b[n + j] = network.edges[j].resistance( q_guess[j], khg[j], nu, self.g, 0 );
             }
-            // Fill the K matrix in bottom right corner
+            // Fill the G matrix in bottom right corner
             for i in 0..m {
+                let drdkh = network.edges[i].drdkh( q_guess[i], khg[i], nu, self.g, 0 );
                 for j in 0..n {
-                    mat[n+i][m+j] = - k[i][j];
+                    mat[n+i][m+j] = - drdkh * k[i][j];
                 }
             }
             // Insert boundary conditions 
@@ -216,19 +216,15 @@ impl Solver {
             edge.add_transient_value( time );
         }
 
-        
-        
         let (n, m) = ( network.num_nodes(), network.num_edges() );
         let size = n + m;
         if size == 0 { return Err(1.0); }
         if m == 0 { return Err(1.0); }
         if !self.solved_steady { return Err(1.0); }
-        
 
         let kt = network.incidence_matrix();
         let k = network.k_matrix();
-        let d_diag = network.d_diag( fluid );
-        let b_diag = network.b_diag();
+        let d_diag = network.d_diag( fluid, self.g );
 
         let mut iter: usize = 0;
         let mut max_residual: f64 = 1.0;
@@ -237,16 +233,13 @@ impl Solver {
             // Assemble the matrix problem
             let mut b = Vec64::new( size, 0.0 );
             let mut mat = Mat64::new( size, size, 0.0 );
-
             let qbar = self.theta * qg.clone() + ( 1.0 - self.theta ) * qn.clone();
             let hbar = self.theta * hg.clone() + ( 1.0 - self.theta ) * hn.clone();
-
             // Continuity equation at each node
             let mut continuity_residual = network.consumption_q( step + 1, fluid.density() );
             continuity_residual -= kt.clone() * qbar.clone();
             let mut hdiff = hg.clone() - hn.clone();
             for i in 0..n {
-                //hdiff[i] *= d_diag[i];
                 if network.nodes[i].is_tank() {
                     hdiff[i] *= d_diag[i] + network.nodes[i].area();
                 } else {
@@ -258,7 +251,6 @@ impl Solver {
                 for j in 0..m {
                     mat[i][j] = self.theta * kt[i][j];
                 }
-                //mat[i][m+i] = invdt * d_diag[i];
                 if network.nodes[i].is_tank() {
                     mat[i][m+i] = invdt * ( d_diag[i] + network.nodes[i].area() );
                 } else {
@@ -266,22 +258,21 @@ impl Solver {
                 }
                 b[i] = continuity_residual[i];
             }
-
             // Fill the resistance Jacobian matrix in bottom left corner
             let khbar = k.clone() * hbar.clone();
             for j in 0..m {
-                let ( r, drdq ) = network.edges[j].r_drdq( qbar[j], fluid.kinematic_viscosity(), self.g, step + 1 );
-                mat[n + j][j] = invdt * b_diag[j] - drdq;
-                b[n + j] = r - invdt * b_diag[j] * ( qg[j] - qn[j] ) + khbar[j];
+                let r = network.edges[j].resistance( qbar[j], khbar[j], fluid.kinematic_viscosity(), self.g, step + 1 );
+                let drdq = network.edges[j].drdq( qbar[j], khbar[j], fluid.kinematic_viscosity(), self.g, step + 1 );
+                mat[n + j][j] = invdt - self.theta * drdq;
+                b[n + j] = r - invdt * ( qg[j] - qn[j] );
             }
-
-            // Fill the K matrix in bottom right corner
+            // Fill the G matrix in bottom right corner
             for i in 0..m {
+                let drdkh = network.edges[i].drdkh( qbar[i], khbar[i], fluid.kinematic_viscosity(), self.g, step + 1 );
                 for j in 0..n {
-                    mat[n+i][m+j] = - self.theta * k[i][j];
+                    mat[n+i][m+j] = - self.theta * drdkh * k[i][j];
                 }
             }
-
             // Insert boundary conditions 
             for i in 0..n {
                 if network.nodes[i].is_known_pressure() {
