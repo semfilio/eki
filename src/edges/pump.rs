@@ -110,11 +110,11 @@ impl Pump {
         }
     }
 
-    pub fn resistance(&self, flow_rate: f64, _nu: f64, _g: f64, step: usize ) -> f64 {
-        let q = flow_rate / self.q_rated;
+    pub fn resistance(&self, q: f64, dh: f64, _nu: f64, g: f64, step: usize ) -> f64 {
+        let qj = q / self.q_rated;
         let n = self.n( step );
-        let theta = Pump::theta( n, q );
-        self.h_rated * ( n * n + q * q ) * self.f_h( theta )
+        let theta = Pump::theta( n, qj );
+        g * self.area() * ( self.h_rated * ( n * n + qj * qj ) * self.f_h( theta ) + dh )
     }
 
     pub fn area(&self) -> f64 {
@@ -144,10 +144,10 @@ impl Pump {
         - result.sqrt()*/
         //println!( "head_loss = {}", head_loss );
         //- self.interpolate_head( head_loss.abs() / self.h_rated )
-        let r = self.resistance( 0.0, 0.0, 0.0, 0 );
+        let r = self.resistance( 0.0, 0.0, 0.0, 0.0, 0 );
         let delta = 1.0e-8;
-        let rplus = self.resistance( delta, 0.0, 0.0, 0 );
-        let rminus = self.resistance( -delta, 0.0, 0.0, 0 );
+        let rplus = self.resistance( delta, 0.0, 0.0, 0.0, 0 );
+        let rminus = self.resistance( -delta, 0.0, 0.0, 0.0, 0 );
         let rd = ( rplus - rminus ) / ( 2.0 * delta );
         let rdd = ( rplus + rminus - 2.0 * r ) / ( delta.powi( 2 ));
         let disc = ( rd * rd - 4.0 * rdd * ( r - head_loss ) ).sqrt();

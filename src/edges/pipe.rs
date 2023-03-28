@@ -73,13 +73,13 @@ impl Pipe {
         utility::friction_factor( relative, re )
     }
 
-    pub fn resistance(&self, flow_rate: f64, nu: f64, g: f64 ) -> f64 {
-        if flow_rate == 0.0 {
+    pub fn resistance(&self, q: f64, dh: f64, nu: f64, g: f64 ) -> f64 {
+        if q == 0.0 {
             0.0
         } else {
-            let friction = self.friction_factor( flow_rate.abs(), nu );
-            let r = - friction * flow_rate * flow_rate.abs() / ( 2. * self.diameter * self.area() );
-            self.length * r / ( g * self.area() )
+            let friction = self.friction_factor( q.abs(), nu );
+            let r = - friction * q * q.abs() / ( 2. * self.diameter * self.area() );
+            r + dh * ( g * self.area() / self.length )
         }
     }
 

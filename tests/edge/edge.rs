@@ -16,6 +16,8 @@ fn pipe() {
     assert_eq!( *edge.roughness().unwrap(), 0.05e-3 );
     assert_eq!( *edge.thickness().unwrap(), 0.005 );
     assert_eq!( *edge.youngs_modulus().unwrap(), 2.0e11 );
+    assert_eq!( edge.from().id(), 0 );
+    assert_eq!( edge.to().id(), 1 );
 }
 
 #[test]
@@ -35,8 +37,10 @@ fn valve() {
 fn resistance() {
     let node_from = Node::Pressure( Pressure::new( 1 ) );
     let node_to = Node::Connection( Connection::new( 2 ) );
-    let edge = Edge::Pipe( Pipe::new( node_from, node_to ) );
+    let mut edge = Edge::Pipe( Pipe::new( node_from, node_to ) );
     let q = 0.01;
-    let r = edge.resistance( q, 1.1375e-6, 9.81, 0 );
-    assert_eq!( r, -4.299969928559725 );
+    let dh = 0.0;
+    let r = edge.resistance( q, dh, 1.1375e-6, 9.81, 0 );
+    let lga = *(edge.length().unwrap()) / ( 9.81 * edge.area() );
+    assert_eq!( r * lga, -4.299969928559724 );
 }

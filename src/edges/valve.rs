@@ -125,8 +125,8 @@ impl Valve {
         a.sqrt()
     }
 
-    pub fn resistance(&self, flow_rate: f64, _nu: f64, g: f64, step: usize ) -> f64 {
-        - self.k( step ) * flow_rate * flow_rate.abs() / ( 2. * g * self.area() * self.area()  )
+    pub fn resistance(&self, q: f64, dh: f64, _nu: f64, g: f64, step: usize ) -> f64 {
+        - ( self.k( step ) * q * q.abs() / ( 2. * self.area()  ) ) + g * self.area() * dh
     }
 
     pub fn k_laminar(&self, nu: f64 ) -> f64 {
@@ -140,19 +140,6 @@ impl Valve {
         let result = 2.0 * g * a * a / ( self.k( 0 ) * head_loss.abs() );
         result.sqrt()
     }
-
-    // TODO do we need this ???
-    /*pub fn create_transient_values(&mut self, tnodes: &[f64]) {
-        let mass_flow = vec![ self.mass_flow[0]; tnodes.len() ];
-        self.mass_flow = mass_flow;
-        let mut open_percent = vec![ self.open_percent[0]; tnodes.len() ];
-        for (i, t) in tnodes.iter().enumerate() {
-            for event in self.events.iter() {
-                open_percent[i] = event.open_percent( *t, open_percent[0] );
-            }
-        }
-        self.open_percent = open_percent;
-    }*/ 
 
     pub fn add_transient_value( &mut self, time: f64 ) {
         //let steady = *self.open_percent.last().unwrap();

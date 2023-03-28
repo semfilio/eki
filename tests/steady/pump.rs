@@ -30,7 +30,8 @@ fn resistance() {
     let mut pump = Pump::new( from, to );
     let flow = 300.0 / ( 60.0 * 60.0 );         // 300 m^3/hour
     pump.speed[0] = 5650.0 / 3.0_f64.sqrt();    // 3262.03 rpm
-    let r = pump.resistance( flow, 0.0, 0.0, 0 );  
+    let dh = 0.0;
+    let r = pump.resistance( flow, dh, 0.0, 9.81, 0 ) / ( 9.81 * pump.area()); 
     assert!( (r - 6.6).abs() < 1.0e-10 );  
 }
 
@@ -67,7 +68,10 @@ fn basic_steady_pump() {
     if theta < 0.0 { theta += 2.0 * std::f64::consts::PI; }
     let fh = new_pump.f_h( theta );
     let h = ( n * n + q * q ) * fh;
+    println!( "h = {}", h );
+    println!( "elevation = {}", elevation / new_pump.h_rated );
     assert!( ( h - (elevation / new_pump.h_rated) ).abs() < 1.0e-10 );
+    
 }
 
 /*#[test]

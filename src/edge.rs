@@ -31,45 +31,34 @@ impl std::fmt::Display for Edge {
     }
 }
 
+// Macro for match statement when all cases are the same
+macro_rules! match_edge {
+    ($self:ident, $edge:ident, $block:block) => {
+        match $self {
+            Edge::Pipe($edge) => $block,
+            Edge::Valve($edge) => $block,
+            Edge::Pump($edge) => $block,
+            Edge::Bend($edge) => $block,
+            Edge::SizeChange($edge) => $block,
+        }
+    };
+}
+
 impl Edge {
     pub fn from(&self) -> Node {
-        match self {
-            Edge::Pipe(edge) => edge.from.clone(),
-            Edge::Valve(edge) => edge.from.clone(),
-            Edge::Pump(edge) => edge.from.clone(),
-            Edge::Bend(edge) => edge.from.clone(),
-            Edge::SizeChange(edge) => edge.from.clone(),
-        }
+        match_edge!(self, edge, {edge.from.clone()})
     }
 
     pub fn to(&self) -> Node {
-        match self {
-            Edge::Pipe(edge) => edge.to.clone(),
-            Edge::Valve(edge) => edge.to.clone(),
-            Edge::Pump(edge) => edge.to.clone(),
-            Edge::Bend(edge) => edge.to.clone(),
-            Edge::SizeChange(edge) => edge.to.clone(),
-        }
+        match_edge!(self, edge, {edge.to.clone()})
     }
 
     pub fn id(&self) -> (usize, usize) {
-        match self {
-            Edge::Pipe(edge) => (edge.from.id(), edge.to.id()),
-            Edge::Valve(edge) => (edge.from.id(), edge.to.id()),
-            Edge::Pump(edge) => (edge.from.id(), edge.to.id()),
-            Edge::Bend(edge) => (edge.from.id(), edge.to.id()),
-            Edge::SizeChange(edge) => (edge.from.id(), edge.to.id()),
-        }
+        match_edge!(self, edge, {(edge.from.id(), edge.to.id())})
     }
 
     pub fn mass_flow(&mut self) -> &mut Vec<f64> {
-        match self {
-            Edge::Pipe(edge) => &mut edge.mass_flow,
-            Edge::Valve(edge) => &mut edge.mass_flow,
-            Edge::Pump(edge) => &mut edge.mass_flow,
-            Edge::Bend(edge) => &mut edge.mass_flow,
-            Edge::SizeChange(edge) => &mut edge.mass_flow,
-        }
+        match_edge!(self, edge, {&mut edge.mass_flow})
     }
 
     pub fn steady_mass_flow(&mut self) -> &mut f64 {
@@ -119,23 +108,11 @@ impl Edge {
     }
 
     pub fn diameter(&mut self) -> &mut f64 {
-        match self {
-            Edge::Pipe(edge) => &mut edge.diameter,
-            Edge::Valve(edge) => &mut edge.diameter,
-            Edge::Pump(edge) => &mut edge.diameter,     // Impeller diameter
-            Edge::Bend(edge) => &mut edge.diameter,
-            Edge::SizeChange(edge) => &mut edge.diameter, // From diameter d_i
-        }
+        match_edge!(self, edge, {&mut edge.diameter})
     }
 
     pub fn area(&self) -> f64 {
-        match self {
-            Edge::Pipe(edge) => edge.area(),
-            Edge::Valve(edge) => edge.area(),
-            Edge::Pump(edge) => edge.area(),
-            Edge::Bend(edge) => edge.area(),
-            Edge::SizeChange(edge) => edge.area(),
-        }
+        match_edge!(self, edge, {edge.area()})
     }
 
     pub fn roughness(&mut self) -> Option<&mut f64> {
@@ -225,54 +202,39 @@ impl Edge {
     }
 
     pub fn wave_speed(&self, fluid: &Fluid) -> f64 {
-        match self {
-            Edge::Pipe(edge) => edge.wave_speed( fluid ),
-            Edge::Valve(edge) => edge.wave_speed( fluid ),
-            Edge::Pump(edge) => edge.wave_speed( fluid ),
-            Edge::Bend(edge) => edge.wave_speed( fluid ),
-            Edge::SizeChange(edge) => edge.wave_speed( fluid ),
-        }
-    }
+        match_edge!(self, edge, {edge.wave_speed( fluid )})
+    } 
 
-    pub fn r_drdq(&self, flow_rate: f64, nu: f64, g: f64, step: usize ) -> (f64, f64) {
-        let r = self.resistance( flow_rate, nu, g, step );
+    pub fn drdq(&self, q: f64, dh: f64, nu: f64, g: f64, step: usize ) -> f64 {
         let delta = 1.0e-8;
-        let q_plus = flow_rate + delta;
-        let r_plus = self.resistance( q_plus, nu, g, step );
-        let q_minus = flow_rate - delta;
-        let r_minus = self.resistance( q_minus, nu, g, step );
-        let drdq = ( r_plus - r_minus ) / ( 2.0 * delta );
-        ( r, drdq )
+        let r_plus = self.resistance( q + delta, dh, nu, g, step );
+        let r_minus = self.resistance( q - delta, dh, nu, g, step );
+        ( r_plus - r_minus ) / ( 2.0 * delta )
     }
 
-    pub fn resistance(&self, flow_rate: f64, nu: f64, g: f64, step: usize ) -> f64 {
+    pub fn drdkh(&self, q:f64, dh: f64, nu: f64, g: f64, step: usize ) -> f64 {
+        let delta = 1.0e-8;
+        let r_plus = self.resistance( q, dh + delta, nu, g, step );
+        let r_minus = self.resistance( q, dh - delta, nu, g, step );
+        ( r_plus - r_minus ) / ( 2.0 * delta )
+    }
+
+    pub fn resistance(&self, q: f64, dh: f64, nu: f64, g: f64, step: usize ) -> f64 {
         match self {
-            Edge::Pipe(edge) => edge.resistance( flow_rate, nu, g ),
-            Edge::Valve(edge) => edge.resistance( flow_rate, nu, g, step ),
-            Edge::Pump(edge) => edge.resistance( flow_rate, nu, g, step ),
-            Edge::Bend(edge) => edge.resistance( flow_rate, nu, g ),
-            Edge::SizeChange(edge) => edge.resistance( flow_rate, nu, g ),
+            Edge::Pipe(edge) => edge.resistance( q, dh, nu, g ),
+            Edge::Valve(edge) => edge.resistance( q, dh, nu, g, step ),
+            Edge::Pump(edge) => edge.resistance( q, dh, nu, g, step ),
+            Edge::Bend(edge) => edge.resistance( q, dh, nu, g ),
+            Edge::SizeChange(edge) => edge.resistance( q, dh, nu, g ),
         }
     }
 
     pub fn k_laminar(&self, nu: f64 ) -> f64 {
-        match self {
-            Edge::Pipe(edge) => edge.k_laminar(nu),
-            Edge::Valve(edge) => edge.k_laminar(nu),
-            Edge::Pump(edge) => edge.k_laminar(nu),
-            Edge::Bend(edge) => edge.k_laminar(nu),
-            Edge::SizeChange(edge) => edge.k_laminar(nu),
-        }
+        match_edge!(self, edge, {edge.k_laminar(nu)})
     }
 
     pub fn darcy_approx(&self, head_loss: f64, g: f64 ) -> f64 {
-        match self {
-            Edge::Pipe(edge) => edge.darcy_approx(head_loss, g),
-            Edge::Valve(edge) => edge.darcy_approx(head_loss, g),
-            Edge::Pump(edge) => edge.darcy_approx(head_loss, g),
-            Edge::Bend(edge) => edge.darcy_approx(head_loss, g),
-            Edge::SizeChange(edge) => edge.darcy_approx(head_loss, g),
-        }
+        match_edge!(self, edge, {edge.darcy_approx(head_loss, g)})
     }
 
     pub fn add_transient_value(&mut self, time: f64 ) {
@@ -315,45 +277,19 @@ impl Edge {
         }
     }
 
-    //TODO these can be written better
-
     pub fn selected( &mut self, select: bool ) {
-        match self {
-            Edge::Pipe(edge) => edge.selected = select,
-            Edge::Valve(edge) => edge.selected = select,
-            Edge::Pump(edge) => edge.selected = select,
-            Edge::Bend(edge) => edge.selected = select,
-            Edge::SizeChange(edge) => edge.selected = select,
-        }
+        match_edge!(self, edge, {edge.selected = select})
     }
 
     pub fn is_selected(&self) -> bool {
-        match self {
-            Edge::Pipe(edge) => edge.selected,
-            Edge::Valve(edge) => edge.selected,
-            Edge::Pump(edge) => edge.selected,
-            Edge::Bend(edge) => edge.selected,
-            Edge::SizeChange(edge) => edge.selected,
-        }
+        match_edge!(self, edge, {edge.selected})
     }
 
     pub fn update_from(&mut self, node: Node ) {
-        match self {
-            Edge::Pipe(edge) => edge.from = node,
-            Edge::Valve(edge) => edge.from = node,
-            Edge::Pump(edge) => edge.from = node,
-            Edge::Bend(edge) => edge.from = node,
-            Edge::SizeChange(edge) => edge.from = node,
-        }
+        match_edge!(self, edge, {edge.from = node})
     }
 
     pub fn update_to(&mut self, node: Node ) {
-        match self {
-            Edge::Pipe(edge) => edge.to = node,
-            Edge::Valve(edge) => edge.to = node,
-            Edge::Pump(edge) => edge.to = node,
-            Edge::Bend(edge) => edge.to = node,
-            Edge::SizeChange(edge) => edge.to = node,
-        }
+        match_edge!(self, edge, {edge.to = node})
     }
 }
