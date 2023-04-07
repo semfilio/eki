@@ -205,6 +205,17 @@ impl Edge {
         match_edge!(self, edge, {edge.wave_speed( fluid )})
     } 
 
+    // The coefficient for the M matrix (typically 0 as we assume infinte wave speed in non-pipes)
+    pub fn m_coefficient(&self, fluid: &Fluid, g: f64) -> f64 {
+        match self {
+            Edge::Pipe(edge) => edge.m_coefficient( fluid, g ),
+            Edge::Valve(_edge) => 0.0,
+            Edge::Pump(_edge) => 0.0,
+            Edge::Bend(_edge) => 0.0, //TODO bend m coefficient (length = curve length) ?
+            Edge::SizeChange(_edge) => 0.0,
+        }
+    }
+
     pub fn drdq(&self, q: f64, dh: f64, nu: f64, g: f64, step: usize ) -> f64 {
         let delta = 1.0e-8;
         let r_plus = self.resistance( q + delta, dh, nu, g, step );

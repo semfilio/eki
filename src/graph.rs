@@ -105,14 +105,7 @@ impl Graph {
     pub fn m_diag(&mut self, fluid: &Fluid, g: f64) -> Vec64 {
         let mut m = Vec64::new( self.num_edges(), 0.0 );
         for i in 0..self.num_edges() {
-            let a: f64 = self.edges[i].wave_speed( fluid );
-            let area = self.edges[i].area();
-            if let Some(length) = self.edges[i].length() {
-                m[i] = 0.5 * g * area * (*length) / ( a * a );
-            } else {
-                //m[i] = 0.5 * g * area / ( a * a );
-                m[i] = 0.0;
-            }
+            m[i] = self.edges[i].m_coefficient( fluid, g );
         }
         m
     }
