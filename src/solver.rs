@@ -230,6 +230,7 @@ impl Solver {
         let mut max_residual: f64 = 1.0;
         // Iterate to convergence 
         while iter < self.max_iter && max_residual > self.tolerance {
+            let b_diag = network.b_diag( fluid, self.g );
             // Assemble the matrix problem
             let mut b = Vec64::new( size, 0.0 );
             let mut mat = Mat64::new( size, size, 0.0 );
@@ -263,8 +264,8 @@ impl Solver {
             for j in 0..m {
                 let r = network.edges[j].resistance( qbar[j], khbar[j], fluid.kinematic_viscosity(), self.g, step + 1 );
                 let drdq = network.edges[j].drdq( qbar[j], khbar[j], fluid.kinematic_viscosity(), self.g, step + 1 );
-                mat[n + j][j] = invdt - self.theta * drdq;
-                b[n + j] = r - invdt * ( qg[j] - qn[j] );
+                mat[n + j][j] = invdt * b_diag[j] - self.theta * drdq;
+                b[n + j] = r - invdt * b_diag[j] * ( qg[j] - qn[j] );
             }
             // Fill the G matrix in bottom right corner
             for i in 0..m {

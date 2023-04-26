@@ -134,6 +134,15 @@ impl Graph {
         d
     }
 
+    // Return the diagonal coefficient matrix B 
+    pub fn b_diag(&mut self, fluid: &Fluid, g: f64 ) -> Vec64 {
+        let mut b = Vec64::new( self.num_edges(), 1.0 );
+        for j in 0..self.num_edges() {
+            b[j] = self.edges[j].b_coefficient( fluid, g );
+        }
+        b
+    }
+
     // Return the vector of nodal consumptions (steady) [mdot]
     pub fn steady_consumption(&mut self) -> Vec64 {
         let n = self.num_nodes();

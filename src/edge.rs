@@ -216,6 +216,14 @@ impl Edge {
         }
     }
 
+    // The coefficient for the B matrix (typically 1)
+    pub fn b_coefficient(&self, _fluid: &Fluid, _g: f64 ) -> f64 {
+        match self {
+            Edge::Valve(_edge) => 1.0, //TODO valve b coefficient = k^-1
+            _ => 1.0,
+        }
+    }
+
     pub fn drdq(&self, q: f64, dh: f64, nu: f64, g: f64, step: usize ) -> f64 {
         let delta = 1.0e-8;
         let r_plus = self.resistance( q + delta, dh, nu, g, step );
