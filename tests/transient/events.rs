@@ -95,10 +95,10 @@ fn valve_closure() {
     network.add_node( node_to.clone() );
 
     let mut valve = Edge::Valve( Valve::new( node_from, node_to ) );
-    *valve.k_values().unwrap() = vec![ 
-        (0.0, 1.0e16),
-        (0.5, 7.0),
-        (1.0, 0.25),
+    *valve.invk_values().unwrap() = vec![ 
+        (0.0, 0.0),
+        (0.5, 1. / 7.0),
+        (1.0, 1. / 0.25),
     ];
     *valve.steady_open_percent() = 1.0; // k = 0.25
     *valve.diameter() = 50.0e-3;        // D = 50mm

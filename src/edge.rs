@@ -181,10 +181,10 @@ impl Edge {
         &mut self.open_percent().unwrap()[0]
     }
 
-    pub fn k_values(&mut self) -> Option<&mut Vec<(f64, f64)>> {
+    pub fn invk_values(&mut self) -> Option<&mut Vec<(f64, f64)>> {
         match self {
             Edge::Pipe(_edge) => None,
-            Edge::Valve(edge) => Some(&mut edge.k),
+            Edge::Valve(edge) => Some(&mut edge.invk),
             Edge::Pump(_edge) => None,
             Edge::Bend(_edge) => None,
             Edge::SizeChange(_edge) => None,
@@ -194,7 +194,7 @@ impl Edge {
     pub fn pressure_loss_coefficient(&self, step: usize ) -> Option<f64> {
         match self {
             Edge::Pipe(_edge) => None,
-            Edge::Valve(edge) => Some( edge.k( step ) ),
+            Edge::Valve(edge) => Some( 1.0 / edge.invk( step ) ),
             Edge::Pump(_edge) => None,
             Edge::Bend(_edge) => None, //TODO: Bend pressure loss coefficient
             Edge::SizeChange(_edge) => None, //TODO: Size change pressure loss coefficient
@@ -217,9 +217,9 @@ impl Edge {
     }
 
     // The coefficient for the B matrix (typically 1)
-    pub fn b_coefficient(&self, _fluid: &Fluid, _g: f64 ) -> f64 {
+    pub fn b_coefficient(&self, _fluid: &Fluid, _g: f64, step: usize ) -> f64 {
         match self {
-            Edge::Valve(_edge) => 1.0, //TODO valve b coefficient = k^-1
+            Edge::Valve(edge) => edge.b_coefficient( step ),
             _ => 1.0,
         }
     }

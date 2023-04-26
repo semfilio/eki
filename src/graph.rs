@@ -135,10 +135,10 @@ impl Graph {
     }
 
     // Return the diagonal coefficient matrix B 
-    pub fn b_diag(&mut self, fluid: &Fluid, g: f64 ) -> Vec64 {
+    pub fn b_diag(&mut self, fluid: &Fluid, g: f64, step: usize ) -> Vec64 {
         let mut b = Vec64::new( self.num_edges(), 1.0 );
         for j in 0..self.num_edges() {
-            b[j] = self.edges[j].b_coefficient( fluid, g );
+            b[j] = self.edges[j].b_coefficient( fluid, g, step );
         }
         b
     }

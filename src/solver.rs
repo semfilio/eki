@@ -230,7 +230,7 @@ impl Solver {
         let mut max_residual: f64 = 1.0;
         // Iterate to convergence 
         while iter < self.max_iter && max_residual > self.tolerance {
-            let b_diag = network.b_diag( fluid, self.g );
+            let b_diag = network.b_diag( fluid, self.g, step + 1 ); // Coefficient at the next step
             // Assemble the matrix problem
             let mut b = Vec64::new( size, 0.0 );
             let mut mat = Mat64::new( size, size, 0.0 );
