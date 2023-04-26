@@ -6,6 +6,7 @@ use crate::edges::{
     bend::Bend,
     size_change::SizeChange,
     check_valve::CheckValve,
+    safety_valve::SafetyValve,
 };
 use crate::fluid::Fluid;
 use crate::events::TransientEvent;
@@ -19,6 +20,7 @@ pub enum Edge {
     Bend(Bend),
     SizeChange(SizeChange), 
     CheckValve(CheckValve),
+    SafetyValve(SafetyValve),
 }
 
 impl std::fmt::Display for Edge {
@@ -30,6 +32,7 @@ impl std::fmt::Display for Edge {
             Edge::Bend(_edge) => write!(f, "Bend"),
             Edge::SizeChange(_edge) => write!(f, "Size Change"),
             Edge::CheckValve(_edge) => write!(f, "Check Valve"),
+            Edge::SafetyValve(_edge) => write!(f, "Safety Valve"),
         }
     }
 }
@@ -44,6 +47,7 @@ macro_rules! match_edge {
             Edge::Bend($edge) => $block,
             Edge::SizeChange($edge) => $block,
             Edge::CheckValve($edge) => $block,
+            Edge::SafetyValve($edge) => $block,
         }
     };
 }
@@ -89,6 +93,7 @@ impl Edge {
             Edge::Bend(_edge) => None,
             Edge::SizeChange(_edge) => None,
             Edge::CheckValve(_edge) => None,
+            Edge::SafetyValve(_edge) => None,
         }
     }
 
@@ -100,6 +105,7 @@ impl Edge {
             Edge::Bend(edge) => Some(&mut edge.radius),
             Edge::SizeChange(_edge) => None,
             Edge::CheckValve(_edge) => None,
+            Edge::SafetyValve(_edge) => None,
         }
     }
 
@@ -111,6 +117,7 @@ impl Edge {
             Edge::Bend(edge) => Some(&mut edge.angle),
             Edge::SizeChange(_edge) => None,
             Edge::CheckValve(_edge) => None,
+            Edge::SafetyValve(_edge) => None,
         }
     }
 
@@ -130,6 +137,7 @@ impl Edge {
             Edge::Bend(edge) => Some(&mut edge.roughness),
             Edge::SizeChange(_edge) => None,
             Edge::CheckValve(_edge) => None,
+            Edge::SafetyValve(_edge) => None,
         }
     }
 
@@ -141,6 +149,7 @@ impl Edge {
             Edge::Bend(edge) => Some( &mut edge.thickness ),
             Edge::SizeChange(_edge) => None,
             Edge::CheckValve(_edge) => None,
+            Edge::SafetyValve(_edge) => None,
         }
     }
 
@@ -152,6 +161,7 @@ impl Edge {
             Edge::Bend(edge) => Some( &mut edge.youngs_modulus ),
             Edge::SizeChange(_edge) => None,
             Edge::CheckValve(_edge) => None,
+            Edge::SafetyValve(_edge) => None,
         }
     }
 
@@ -164,6 +174,7 @@ impl Edge {
             Edge::Bend(_edge) => None,
             Edge::SizeChange(_edge) => None,
             Edge::CheckValve(edge) => Some(&mut edge.open_percent),
+            Edge::SafetyValve(edge) => Some(&mut edge.open_percent),
         }
     }
 
@@ -175,6 +186,7 @@ impl Edge {
             Edge::Bend(_edge) => None,
             Edge::SizeChange(_edge) => None,
             Edge::CheckValve(_edge) => None,
+            Edge::SafetyValve(_edge) => None,
         }
     }
 
@@ -186,6 +198,7 @@ impl Edge {
             Edge::Bend(_edge) => None,
             Edge::SizeChange(edge) => Some(&mut edge.beta),
             Edge::CheckValve(_edge) => None,
+            Edge::SafetyValve(_edge) => None,
         }
     }
 
@@ -201,6 +214,7 @@ impl Edge {
             Edge::Bend(_edge) => None,
             Edge::SizeChange(_edge) => None,
             Edge::CheckValve(edge) => Some(&mut edge.invk),
+            Edge::SafetyValve(edge) => Some(&mut edge.invk),
         }
     }
 
@@ -212,6 +226,7 @@ impl Edge {
             Edge::Bend(_edge) => None, //TODO: Bend pressure loss coefficient
             Edge::SizeChange(_edge) => None, //TODO: Size change pressure loss coefficient
             Edge::CheckValve(edge) => Some( 1.0 / edge.invk( step ) ),
+            Edge::SafetyValve(edge) => Some( 1.0 / edge.invk( step ) ),
         }
     }
 
@@ -228,6 +243,7 @@ impl Edge {
             Edge::Bend(_edge) => 0.0, //TODO bend m coefficient (length = curve length) ?
             Edge::SizeChange(_edge) => 0.0,
             Edge::CheckValve(_edge) => 0.0,
+            Edge::SafetyValve(_edge) => 0.0,
         }
     }
 
@@ -236,6 +252,7 @@ impl Edge {
         match self {
             Edge::Valve(edge) => edge.b_coefficient( step ),
             Edge::CheckValve(edge) => edge.b_coefficient( step ),
+            Edge::SafetyValve(edge) => edge.b_coefficient( step ),
             _ => 1.0,
         }
     }
@@ -262,7 +279,9 @@ impl Edge {
             Edge::Bend(edge) => edge.resistance( q, dh, nu, g ),
             Edge::SizeChange(edge) => edge.resistance( q, dh, nu, g ),
             Edge::CheckValve(edge) => edge.resistance( q, dh, nu, g, step ),
+            Edge::SafetyValve(edge) => edge.resistance( q, dh, nu, g, step ),
         }
+        //TODO use macro since they are all the same
     }
 
     pub fn k_laminar(&self, nu: f64 ) -> f64 {
@@ -281,6 +300,7 @@ impl Edge {
             Edge::Bend(_edge) => {},
             Edge::SizeChange(_edge) => {},
             Edge::CheckValve(edge) => edge.add_transient_value( time ),
+            Edge::SafetyValve(edge) => edge.add_transient_value( time ),
         }
     }
 
@@ -292,6 +312,7 @@ impl Edge {
             Edge::Bend(_edge) => None,
             Edge::SizeChange(_edge) => None,
             Edge::CheckValve(_edge) => None,
+            Edge::SafetyValve(_edge) => None,
         }
     }
 
@@ -303,6 +324,7 @@ impl Edge {
             Edge::Bend(_edge) => {},
             Edge::SizeChange(_edge) => {},
             Edge::CheckValve(_edge) => {},
+            Edge::SafetyValve(_edge) => {},
         }
     }
 
@@ -314,6 +336,7 @@ impl Edge {
             Edge::Bend(_edge) => None,
             Edge::SizeChange(_edge) => None,
             Edge::CheckValve(_edge) => None,
+            Edge::SafetyValve(_edge) => None,
         }
     }
 

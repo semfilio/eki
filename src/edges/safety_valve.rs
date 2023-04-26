@@ -4,30 +4,32 @@ use crate::fluid::Fluid;
 
 #[derive(Clone, PartialEq, Debug, Default, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "persistence", serde(default))]
-pub struct CheckValve {
+pub struct SafetyValve {
     pub from: Node,
     pub to: Node,
     pub mass_flow: Vec<f64>,
     pub diameter: f64,
     pub thickness: f64,
     pub youngs_modulus: f64,
+    pub set_dp: f64,
     pub invk: Vec<(f64, f64)>, // (% open, k^-1)
     pub open_percent: Vec<f64>,
     pub width: f32,
     pub selected: bool,
 }
 
-impl CheckValve {
-    pub fn new(from: Node, to: Node ) -> Self {
-        CheckValve { 
+impl SafetyValve {
+    pub fn new(from: Node, to: Node, set_dp: f64 ) -> Self {
+        SafetyValve { 
             from, 
             to, 
             mass_flow: vec![ 0.0 ],
             diameter: 52.5e-3,
             thickness: 0.005, // 5mm pipe
             youngs_modulus: 2.0e11, // Steel pipe TODO should be able to modify
-            invk: default_check_valve_data(),
-            open_percent: vec![ 1.0 ], // 100% open by default
+            set_dp,
+            invk: default_safety_valve_data(),
+            open_percent: vec![ 0.0 ], // closed by default
             width: 15.0, 
             selected: false,
         }
@@ -43,7 +45,6 @@ impl CheckValve {
         } else {
             self.invk[1].1
         }
-        // TODO eventually we may want to allow for partially open check valves during opening/closing.
     }
 
     pub fn area(&self) -> f64 {
@@ -83,7 +84,7 @@ impl CheckValve {
         let p_from = self.from.pressure()[ step ];
         let p_to = self.to.pressure()[ step ];
         let dp = p_from - p_to;
-        if dp > 0.0 {
+        if dp > self.set_dp {
             self.open_percent.push( 1.0 )
         } else {
             self.open_percent.push( 0.0 );
@@ -92,7 +93,7 @@ impl CheckValve {
 
 }
 
-fn default_check_valve_data() -> Vec<(f64, f64)> {
+fn default_safety_valve_data() -> Vec<(f64, f64)> {
     vec![ 
         ( 0., 0.0 ),
         ( 1., 1. / 0.25 ),
