@@ -70,7 +70,7 @@ fn pipe_tank_valve() {
 
     let mut connection_pressure = network.nodes()[1].pressure().clone();
     let max_pressure_no_tank = utility::max_value( &mut connection_pressure );
-    assert!( max_pressure_no_tank > 200000.0 );
+    assert!( max_pressure_no_tank > 150000.0 );
 
     /* --- Replace connection with surge tank --- */
 

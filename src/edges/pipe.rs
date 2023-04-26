@@ -63,6 +63,12 @@ impl Pipe {
         a.sqrt()
     }
 
+    pub fn m_coefficient(&self, fluid: &Fluid, g: f64 ) -> f64 {
+        let a: f64 = self.wave_speed( fluid );
+        let area = self.area();
+        0.5 * g * area * self.length / ( a * a )
+    }
+
     pub fn reynolds(&self, flow_rate: f64, nu: f64 ) -> f64 {
         flow_rate * self.diameter / ( self.area() * nu )
     }

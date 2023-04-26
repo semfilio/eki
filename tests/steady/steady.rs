@@ -13,6 +13,9 @@ mod pump;
 mod bend;
 mod size_change;
 mod tank;
+mod check_valve;
+mod safety_valve;
+mod relief_valve;
 
 #[test]
 fn default() {

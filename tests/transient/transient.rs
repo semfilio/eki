@@ -9,6 +9,9 @@ use eki::solver::{Solver, SolverType};
 mod streeter_and_wylie;
 mod events;
 mod surge_tank;
+mod check_valve;
+mod safety_valve;
+mod relief_valve;
 
 #[test]
 fn initialise() {

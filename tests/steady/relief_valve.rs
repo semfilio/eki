@@ -2,12 +2,12 @@ use eki::fluid::Fluid;
 use eki::node::Node;
 use eki::nodes::{ pressure::Pressure };
 use eki::edge::Edge;
-use eki::edges::{ valve::Valve };
+use eki::edges::{ relief_valve::ReliefValve };
 use eki::graph::Graph;
 use eki::solver::Solver;
 
 #[test]
-fn steady_valve() {
+fn steady_relief_valve() {
     let mut graph = Graph::new();
     let fluid = Fluid::new_basic( 997.0, 1.1375e-6, 2.15e9 );
     let mut solver = Solver::default();
@@ -18,26 +18,27 @@ fn steady_valve() {
     graph.add_node( node_from.clone() );
     let node_to = Node::Pressure( Pressure::new( 1 ) );
     graph.add_node( node_to.clone() );
-    let mut valve = Edge::Valve( Valve::new( node_from, node_to ) );
-    *valve.invk_values().unwrap() = vec![ 
+    let dp_open = 1000.; 
+    let dp_full = 5000.;
+
+    let mut relief_valve = Edge::ReliefValve( ReliefValve::new( node_from, node_to, dp_open, dp_full ) );
+    *relief_valve.invk_values().unwrap() = vec![ 
         (0.0, 0.0),
-        (0.5, 1. / 7.0),
         (1.0, 1. / 0.25),
     ];
-    *valve.steady_open_percent() = 0.5; // k = 7.0
-    *valve.diameter() = 50.0e-3;        // D = 50mm
-    graph.add_edge( valve );
-    
+    *relief_valve.open_dp_values().unwrap() = vec![
+        (dp_open, 0.0),
+        (dp_full, 1.0),
+    ];
+    *relief_valve.diameter() = 50.0e-3;        // D = 50mm
+    assert_eq!( *relief_valve.steady_open_percent(), 0.0); // Should be closed initially.
+    graph.add_edge( relief_valve );
     
     let result = solver.solve_steady( &mut graph, &fluid, true );
     assert!( result.is_ok() && !result.is_err() );
-    
-    let h_from = graph.nodes()[0].steady_head( solver.gravity(), fluid.density() );
-    assert_eq!( h_from, 20.0 );
-    let h_to = graph.nodes()[1].steady_head( solver.gravity(), fluid.density() );
-    assert_eq!( h_to, 101325.0 / rho_g );
-    
+
+    // Flow should be zero because the relief valve is closed initially.
     let mass_flow = (*graph.edges()[0].mass_flow())[0];
     let q = mass_flow / fluid.density();
-    assert!( (q - 0.010203).abs() < 1.0e-6 );
+    assert!( q.abs() < 1.0e-8 );
 }

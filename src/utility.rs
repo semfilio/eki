@@ -107,9 +107,9 @@ pub fn relative_error( x: f64, x_approx: f64 ) -> f64 {
 }
 
 pub fn interpolate( x: f64, x_data: &Vec<f64>, y_data: &Vec<f64> ) -> f64 {
-    //TODO check Vecs are the same size
+    assert_eq!( x_data.len(), y_data.len() );
     let n = x_data.len();
-    let mut i = 0;
+    let mut i = 1;
     while x > x_data[i] && i < n-1 {
         i += 1;
     }
@@ -119,4 +119,14 @@ pub fn interpolate( x: f64, x_data: &Vec<f64>, y_data: &Vec<f64> ) -> f64 {
     let y_2 = y_data[i];
     let slope = ( y_2 - y_1 ) / ( x_2 - x_1 );
     y_1 + slope * ( x - x_1 )
+}
+
+pub fn split_into_two_vectors( data: &Vec<(f64, f64)> ) -> (Vec<f64>, Vec<f64>) {
+    let mut x = Vec::<f64>::new();
+    let mut y = Vec::<f64>::new();
+    for i in 0..data.len() {
+        x.push( data[i].0 );
+        y.push( data[i].1 );
+    }
+    ( x, y )
 }
