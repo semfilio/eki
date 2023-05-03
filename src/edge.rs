@@ -8,6 +8,7 @@ use crate::edges::{
     check_valve::CheckValve,
     safety_valve::SafetyValve,
     relief_valve::ReliefValve,
+    bursting_disk::BurstingDisk,
 };
 use crate::fluid::Fluid;
 use crate::events::TransientEvent;
@@ -23,6 +24,7 @@ pub enum Edge {
     CheckValve(CheckValve),
     SafetyValve(SafetyValve),
     ReliefValve(ReliefValve),
+    BurstingDisk(BurstingDisk),
 }
 
 impl std::fmt::Display for Edge {
@@ -36,6 +38,7 @@ impl std::fmt::Display for Edge {
             Edge::CheckValve(_edge) => write!(f, "Check Valve"),
             Edge::SafetyValve(_edge) => write!(f, "Safety Valve"),
             Edge::ReliefValve(_edge) => write!(f, "Relief Valve"),
+            Edge::BurstingDisk(_edge) => write!(f, "Bursting Disk"),
         }
     }
 }
@@ -52,6 +55,7 @@ macro_rules! match_edge {
             Edge::CheckValve($edge) => $block,
             Edge::SafetyValve($edge) => $block,
             Edge::ReliefValve($edge) => $block,
+            Edge::BurstingDisk($edge) => $block,
         }
     };
 }
@@ -99,6 +103,7 @@ impl Edge {
             Edge::CheckValve(_edge) => None,
             Edge::SafetyValve(_edge) => None,
             Edge::ReliefValve(_edge) => None,
+            Edge::BurstingDisk(_edge) => None,
         }
     }
 
@@ -112,6 +117,7 @@ impl Edge {
             Edge::CheckValve(_edge) => None,
             Edge::SafetyValve(_edge) => None,
             Edge::ReliefValve(_edge) => None,
+            Edge::BurstingDisk(_edge) => None,
         }
     }
 
@@ -125,6 +131,7 @@ impl Edge {
             Edge::CheckValve(_edge) => None,
             Edge::SafetyValve(_edge) => None,
             Edge::ReliefValve(_edge) => None,
+            Edge::BurstingDisk(_edge) => None,
         }
     }
 
@@ -146,6 +153,7 @@ impl Edge {
             Edge::CheckValve(_edge) => None,
             Edge::SafetyValve(_edge) => None,
             Edge::ReliefValve(_edge) => None,
+            Edge::BurstingDisk(_edge) => None,
         }
     }
 
@@ -159,6 +167,7 @@ impl Edge {
             Edge::CheckValve(_edge) => None,
             Edge::SafetyValve(_edge) => None,
             Edge::ReliefValve(_edge) => None,
+            Edge::BurstingDisk(_edge) => None,
         }
     }
 
@@ -172,6 +181,7 @@ impl Edge {
             Edge::CheckValve(_edge) => None,
             Edge::SafetyValve(_edge) => None,
             Edge::ReliefValve(_edge) => None,
+            Edge::BurstingDisk(_edge) => None,
         }
     }
 
@@ -186,6 +196,7 @@ impl Edge {
             Edge::CheckValve(edge) => Some(&mut edge.open_percent),
             Edge::SafetyValve(edge) => Some(&mut edge.open_percent),
             Edge::ReliefValve(edge) => Some(&mut edge.open_percent),
+            Edge::BurstingDisk(edge) => Some(&mut edge.open_percent),
         }
     }
 
@@ -199,6 +210,7 @@ impl Edge {
             Edge::CheckValve(_edge) => None,
             Edge::SafetyValve(_edge) => None,
             Edge::ReliefValve(_edge) => None,
+            Edge::BurstingDisk(_edge) => None,
         }
     }
 
@@ -212,6 +224,7 @@ impl Edge {
             Edge::CheckValve(_edge) => None,
             Edge::SafetyValve(_edge) => None,
             Edge::ReliefValve(_edge) => None,
+            Edge::BurstingDisk(_edge) => None,
         }
     }
 
@@ -229,6 +242,7 @@ impl Edge {
             Edge::CheckValve(edge) => Some(&mut edge.invk),
             Edge::SafetyValve(edge) => Some(&mut edge.invk),
             Edge::ReliefValve(edge) => Some(&mut edge.invk),
+            Edge::BurstingDisk(edge) => Some(&mut edge.invk),
         }
     }
 
@@ -242,6 +256,7 @@ impl Edge {
             Edge::CheckValve(_edge) => None,
             Edge::SafetyValve(_edge) => None,
             Edge::ReliefValve(edge) => Some(&mut edge.open_dp),
+            Edge::BurstingDisk(_edge) => None,
         }
     }
 
@@ -255,6 +270,7 @@ impl Edge {
             Edge::CheckValve(edge) => Some( 1.0 / edge.invk( step ) ),
             Edge::SafetyValve(edge) => Some( 1.0 / edge.invk( step ) ),
             Edge::ReliefValve(edge) => Some( 1.0 / edge.invk( step ) ),
+            Edge::BurstingDisk(edge) => Some( 1.0 / edge.invk( step ) ),
         }
     }
 
@@ -273,6 +289,7 @@ impl Edge {
             Edge::CheckValve(_edge) => 0.0,
             Edge::SafetyValve(_edge) => 0.0,
             Edge::ReliefValve(_edge) => 0.0,
+            Edge::BurstingDisk(_edge) => 0.0,
         }
     }
 
@@ -283,6 +300,7 @@ impl Edge {
             Edge::CheckValve(edge) => edge.b_coefficient( step ),
             Edge::SafetyValve(edge) => edge.b_coefficient( step ),
             Edge::ReliefValve(edge) => edge.b_coefficient( step ),
+            Edge::BurstingDisk(edge) => edge.b_coefficient( step ),
             _ => 1.0,
         }
     }
@@ -311,6 +329,7 @@ impl Edge {
             Edge::CheckValve(edge) => edge.resistance( q, dh, nu, g, step ),
             Edge::SafetyValve(edge) => edge.resistance( q, dh, nu, g, step ),
             Edge::ReliefValve(edge) => edge.resistance( q, dh, nu, g, step ),
+            Edge::BurstingDisk(edge) => edge.resistance( q, dh, nu, g, step ),
         }
         //TODO use macro since they are all the same
     }
@@ -333,6 +352,7 @@ impl Edge {
             Edge::CheckValve(edge) => edge.add_transient_value( time ),
             Edge::SafetyValve(edge) => edge.add_transient_value( time ),
             Edge::ReliefValve(edge) => edge.add_transient_value( time ),
+            Edge::BurstingDisk(edge) => edge.add_transient_value( time ),
         }
     }
 
@@ -346,6 +366,7 @@ impl Edge {
             Edge::CheckValve(_edge) => None,
             Edge::SafetyValve(_edge) => None,
             Edge::ReliefValve(_edge) => None,
+            Edge::BurstingDisk(_edge) => None,
         }
     }
 
@@ -359,6 +380,7 @@ impl Edge {
             Edge::CheckValve(_edge) => {},
             Edge::SafetyValve(_edge) => {},
             Edge::ReliefValve(_edge) => {},
+            Edge::BurstingDisk(_edge) => {},
         }
     }
 
@@ -372,6 +394,7 @@ impl Edge {
             Edge::CheckValve(_edge) => None,
             Edge::SafetyValve(_edge) => None,
             Edge::ReliefValve(_edge) => None,
+            Edge::BurstingDisk(_edge) => None,
         }
     }
 
