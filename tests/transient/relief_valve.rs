@@ -71,7 +71,7 @@ fn transient_relief_valve() {
         assert!( result.is_ok() && !result.is_err() );
     }
 
-    // Check that the check valve closes
+    // Check that the valve opens at the correct pressure difference.
     if let Some( open_percent ) = graph.edges()[0].open_percent() {
         assert_eq!( open_percent[0], 0.0 );
         assert_eq!( open_percent[1], 0.0 );
