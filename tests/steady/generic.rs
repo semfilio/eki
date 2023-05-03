@@ -6,7 +6,6 @@ use eki::edge::Edge;
 use eki::edges::generic::Generic;
 use eki::graph::Graph;
 use eki::solver::Solver;
-use eki::utility;
 
 #[test]
 fn generic_component_test() {

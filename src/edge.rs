@@ -290,10 +290,6 @@ impl Edge {
         }
     }
 
-    pub fn wave_speed(&self, fluid: &Fluid) -> f64 {
-        match_edge!(self, edge, {edge.wave_speed( fluid )})
-    } 
-
     // The coefficient for the M matrix (typically 0 as we assume infinte wave speed in non-pipes)
     pub fn m_coefficient(&self, fluid: &Fluid, g: f64) -> f64 {
         match self {

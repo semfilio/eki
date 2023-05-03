@@ -1,6 +1,5 @@
 use std::f64::consts::PI;
 use crate::node::Node;
-use crate::fluid::Fluid;
 
 #[derive(Clone, PartialEq, Debug, Default, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "persistence", serde(default))]
@@ -49,14 +48,6 @@ impl SafetyValve {
 
     pub fn area(&self) -> f64 {
         PI * self.diameter * self.diameter / 4.0
-    }
-
-    pub fn wave_speed(&self, fluid: &Fluid ) -> f64 {
-        let k_over_rho: f64 =  fluid.bulk_modulus() / fluid.density();
-        let dk: f64 = self.diameter * fluid.bulk_modulus();
-        let te: f64 = self.thickness * self.youngs_modulus;
-        let a = k_over_rho / ( 1.0 + ( dk / te ) );
-        a.sqrt()
     }
 
     pub fn resistance(&self, q: f64, dh: f64, _nu: f64, g: f64, step: usize ) -> f64 {

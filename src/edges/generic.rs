@@ -1,7 +1,5 @@
 // A generic resistance component of the form dH = A + B * Q^n + C * Q^m
-use std::f64::consts::PI;
 use crate::node::Node;
-use crate::fluid::Fluid;
 
 #[derive(Clone, PartialEq, Debug, Default, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "persistence", serde(default))]
@@ -51,10 +49,6 @@ impl Generic {
         1.0
     }
 
-    pub fn wave_speed(&self, _fluid: &Fluid ) -> f64 {
-        0.0 //TODO should be infinity
-    }
-
     pub fn resistance(&self, q: f64, dh: f64, _nu: f64, g: f64 ) -> f64 {
         let ( a, b, c ) = self.coefficients;
         let ( n, m ) = self.exponents;
@@ -63,9 +57,8 @@ impl Generic {
         - g * self.area() *  r + g * self.area() * dh 
     }
 
-    // TODO what would be an appropraite laminar term?
-    pub fn k_laminar(&self, nu: f64 ) -> f64 {
-        PI * 9.806 * self.diameter.powi( 4 ) / ( 128.0 * nu )
+    pub fn k_laminar(&self, _nu: f64 ) -> f64 {
+        0.0
     }
 
     pub fn darcy_approx(&self, head_loss: f64, g: f64 ) -> f64 {
