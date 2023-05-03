@@ -61,6 +61,7 @@ impl Generic {
         0.0
     }
 
+    // TODO what's the best way to create an initial guess
     pub fn darcy_approx(&self, head_loss: f64, g: f64 ) -> f64 {
         let f = 0.1;        // assumed friction factor for initial guess
         let a = self.area();

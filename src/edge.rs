@@ -294,15 +294,8 @@ impl Edge {
     pub fn m_coefficient(&self, fluid: &Fluid, g: f64) -> f64 {
         match self {
             Edge::Pipe(edge) => edge.m_coefficient( fluid, g ),
-            Edge::Valve(_edge) => 0.0,
-            Edge::Pump(_edge) => 0.0,
             Edge::Bend(_edge) => 0.0, //TODO bend m coefficient (length = curve length) ?
-            Edge::SizeChange(_edge) => 0.0,
-            Edge::CheckValve(_edge) => 0.0,
-            Edge::SafetyValve(_edge) => 0.0,
-            Edge::ReliefValve(_edge) => 0.0,
-            Edge::BurstingDisk(_edge) => 0.0,
-            Edge::Generic(_edge) => 0.0,
+            _ => 0.0,
         }
     }
 
