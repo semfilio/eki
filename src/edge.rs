@@ -9,6 +9,7 @@ use crate::edges::{
     safety_valve::SafetyValve,
     relief_valve::ReliefValve,
     bursting_disk::BurstingDisk,
+    generic::Generic,
 };
 use crate::fluid::Fluid;
 use crate::events::TransientEvent;
@@ -25,6 +26,7 @@ pub enum Edge {
     SafetyValve(SafetyValve),
     ReliefValve(ReliefValve),
     BurstingDisk(BurstingDisk),
+    Generic(Generic),
 }
 
 impl std::fmt::Display for Edge {
@@ -39,6 +41,7 @@ impl std::fmt::Display for Edge {
             Edge::SafetyValve(_edge) => write!(f, "Safety Valve"),
             Edge::ReliefValve(_edge) => write!(f, "Relief Valve"),
             Edge::BurstingDisk(_edge) => write!(f, "Bursting Disk"),
+            Edge::Generic(_edge) => write!(f, "Generic"),
         }
     }
 }
@@ -56,6 +59,7 @@ macro_rules! match_edge {
             Edge::SafetyValve($edge) => $block,
             Edge::ReliefValve($edge) => $block,
             Edge::BurstingDisk($edge) => $block,
+            Edge::Generic($edge) => $block,
         }
     };
 }
@@ -104,6 +108,7 @@ impl Edge {
             Edge::SafetyValve(_edge) => None,
             Edge::ReliefValve(_edge) => None,
             Edge::BurstingDisk(_edge) => None,
+            Edge::Generic(_edge) => None,
         }
     }
 
@@ -118,6 +123,7 @@ impl Edge {
             Edge::SafetyValve(_edge) => None,
             Edge::ReliefValve(_edge) => None,
             Edge::BurstingDisk(_edge) => None,
+            Edge::Generic(_edge) => None,
         }
     }
 
@@ -132,11 +138,12 @@ impl Edge {
             Edge::SafetyValve(_edge) => None,
             Edge::ReliefValve(_edge) => None,
             Edge::BurstingDisk(_edge) => None,
+            Edge::Generic(_edge) => None,
         }
     }
 
     pub fn diameter(&mut self) -> &mut f64 {
-        match_edge!(self, edge, {&mut edge.diameter})
+        match_edge!(self, edge, {&mut edge.diameter}) //TODO some components don't have diameters
     }
 
     pub fn area(&self) -> f64 {
@@ -154,6 +161,7 @@ impl Edge {
             Edge::SafetyValve(_edge) => None,
             Edge::ReliefValve(_edge) => None,
             Edge::BurstingDisk(_edge) => None,
+            Edge::Generic(_edge) => None,
         }
     }
 
@@ -168,6 +176,7 @@ impl Edge {
             Edge::SafetyValve(_edge) => None,
             Edge::ReliefValve(_edge) => None,
             Edge::BurstingDisk(_edge) => None,
+            Edge::Generic(_edge) => None,
         }
     }
 
@@ -182,6 +191,7 @@ impl Edge {
             Edge::SafetyValve(_edge) => None,
             Edge::ReliefValve(_edge) => None,
             Edge::BurstingDisk(_edge) => None,
+            Edge::Generic(_edge) => None,
         }
     }
 
@@ -197,6 +207,7 @@ impl Edge {
             Edge::SafetyValve(edge) => Some(&mut edge.open_percent),
             Edge::ReliefValve(edge) => Some(&mut edge.open_percent),
             Edge::BurstingDisk(edge) => Some(&mut edge.open_percent),
+            Edge::Generic(_edge) => None,
         }
     }
 
@@ -211,6 +222,7 @@ impl Edge {
             Edge::SafetyValve(_edge) => None,
             Edge::ReliefValve(_edge) => None,
             Edge::BurstingDisk(_edge) => None,
+            Edge::Generic(_edge) => None,
         }
     }
 
@@ -225,6 +237,7 @@ impl Edge {
             Edge::SafetyValve(_edge) => None,
             Edge::ReliefValve(_edge) => None,
             Edge::BurstingDisk(_edge) => None,
+            Edge::Generic(_edge) => None,
         }
     }
 
@@ -243,6 +256,7 @@ impl Edge {
             Edge::SafetyValve(edge) => Some(&mut edge.invk),
             Edge::ReliefValve(edge) => Some(&mut edge.invk),
             Edge::BurstingDisk(edge) => Some(&mut edge.invk),
+            Edge::Generic(_edge) => None,
         }
     }
 
@@ -257,6 +271,7 @@ impl Edge {
             Edge::SafetyValve(_edge) => None,
             Edge::ReliefValve(edge) => Some(&mut edge.open_dp),
             Edge::BurstingDisk(_edge) => None,
+            Edge::Generic(_edge) => None,
         }
     }
 
@@ -271,6 +286,7 @@ impl Edge {
             Edge::SafetyValve(edge) => Some( 1.0 / edge.invk( step ) ),
             Edge::ReliefValve(edge) => Some( 1.0 / edge.invk( step ) ),
             Edge::BurstingDisk(edge) => Some( 1.0 / edge.invk( step ) ),
+            Edge::Generic(_edge) => None,
         }
     }
 
@@ -290,6 +306,7 @@ impl Edge {
             Edge::SafetyValve(_edge) => 0.0,
             Edge::ReliefValve(_edge) => 0.0,
             Edge::BurstingDisk(_edge) => 0.0,
+            Edge::Generic(_edge) => 0.0,
         }
     }
 
@@ -330,6 +347,7 @@ impl Edge {
             Edge::SafetyValve(edge) => edge.resistance( q, dh, nu, g, step ),
             Edge::ReliefValve(edge) => edge.resistance( q, dh, nu, g, step ),
             Edge::BurstingDisk(edge) => edge.resistance( q, dh, nu, g, step ),
+            Edge::Generic(edge) => edge.resistance( q, dh, nu, g ),
         }
         //TODO use macro since they are all the same
     }
@@ -353,6 +371,7 @@ impl Edge {
             Edge::SafetyValve(edge) => edge.add_transient_value( time ),
             Edge::ReliefValve(edge) => edge.add_transient_value( time ),
             Edge::BurstingDisk(edge) => edge.add_transient_value( time ),
+            Edge::Generic(_edge) => {},
         }
     }
 
@@ -367,6 +386,7 @@ impl Edge {
             Edge::SafetyValve(_edge) => None,
             Edge::ReliefValve(_edge) => None,
             Edge::BurstingDisk(_edge) => None,
+            Edge::Generic(_edge) => None,
         }
     }
 
@@ -381,6 +401,7 @@ impl Edge {
             Edge::SafetyValve(_edge) => {},
             Edge::ReliefValve(_edge) => {},
             Edge::BurstingDisk(_edge) => {},
+            Edge::Generic(_edge) => {},
         }
     }
 
@@ -395,6 +416,7 @@ impl Edge {
             Edge::SafetyValve(_edge) => None,
             Edge::ReliefValve(_edge) => None,
             Edge::BurstingDisk(_edge) => None,
+            Edge::Generic(_edge) => None,
         }
     }
 
