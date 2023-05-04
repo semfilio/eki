@@ -14,7 +14,7 @@ pub struct Generic {
 }
 
 impl Generic {
-    pub fn new(from: Node, to: Node ) -> Self {
+    pub fn new( from: Node, to: Node ) -> Self {
         Generic { 
             from, 
             to, 
@@ -40,8 +40,6 @@ impl Generic {
         }
     }
 
-    //TODO need to access coefficients and exponents
-
     pub fn area(&self) -> f64 {
         1.0
     }
@@ -59,7 +57,7 @@ impl Generic {
     }
 
     // TODO what's the best way to create an initial guess
-    pub fn darcy_approx(&self, head_loss: f64, g: f64 ) -> f64 {
+    pub fn darcy_approx(&self, _head_loss: f64, _g: f64 ) -> f64 {
         /*let f = 0.1;        // assumed friction factor for initial guess
         let a = self.area();
         let result = 2.0 * g * self.diameter * a * a / ( f * head_loss.abs() );
