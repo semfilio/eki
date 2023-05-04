@@ -101,7 +101,7 @@ fn valve_closure() {
         (1.0, 1. / 0.25),
     ];
     *valve.steady_open_percent() = 1.0; // k = 0.25
-    *valve.diameter() = 50.0e-3;        // D = 50mm
+    *valve.diameter().unwrap() = 50.0e-3;        // D = 50mm
 
     let exponent = Value( 1.0 );  // Linear closing
     let event_time = Time( 0.0 );

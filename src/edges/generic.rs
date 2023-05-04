@@ -9,7 +9,6 @@ pub struct Generic {
     pub mass_flow: Vec<f64>,            // [kg/s]
     pub coefficients: (f64, f64, f64),  // Coefficients ( A, B, C )   
     pub exponents: (f64, f64),          // Exponents ( n, m )
-    pub diameter: f64,                  // [m] TODO this should be removed
     pub width: f32,
     pub selected: bool,
 }
@@ -22,7 +21,6 @@ impl Generic {
             mass_flow: vec![ 0.0 ],
             coefficients: ( 0.0, 0.0, 0.0 ),
             exponents: ( 0.0, 0.0 ),
-            diameter: 52.5e-3,
             width: 5.0, 
             selected: false,
         }
@@ -37,7 +35,6 @@ impl Generic {
             mass_flow: vec![ 0.0 ],
             coefficients,
             exponents,
-            diameter: 52.5e-3,
             width: 5.0, 
             selected: false,
         }
@@ -63,10 +60,11 @@ impl Generic {
 
     // TODO what's the best way to create an initial guess
     pub fn darcy_approx(&self, head_loss: f64, g: f64 ) -> f64 {
-        let f = 0.1;        // assumed friction factor for initial guess
+        /*let f = 0.1;        // assumed friction factor for initial guess
         let a = self.area();
         let result = 2.0 * g * self.diameter * a * a / ( f * head_loss.abs() );
-        result.sqrt()
+        result.sqrt()*/
+        1.0
     }
 
 }

@@ -80,7 +80,7 @@ fn example3_1() {
         }
         t += dt;
     }
-    *valve.diameter() = 0.5;
+    *valve.diameter().unwrap() = 0.5;
     network.add_edge( valve );
 
     // Check steady results

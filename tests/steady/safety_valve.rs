@@ -24,7 +24,7 @@ fn steady_safety_valve() {
         (0.0, 0.0),
         (1.0, 1. / 0.25),
     ];
-    *safety_valve.diameter() = 50.0e-3;        // D = 50mm
+    *safety_valve.diameter().unwrap() = 50.0e-3;        // D = 50mm
     assert_eq!( *safety_valve.steady_open_percent(), 0.0); // Should be closed initially.
     graph.add_edge( safety_valve );
     

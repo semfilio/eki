@@ -130,7 +130,6 @@ impl Solver {
         let ( mut q_guess, mut h_guess ): ( ohsl::Vec64, ohsl::Vec64 );
         if create_guess {
             ( q_guess, h_guess ) = utility::laminar_guess( network, fluid, self.g );
-            //( q_guess, h_guess ) = utility::random_guess( network, fluid, self.g );
             //println!( "q_guess = {}", q_guess );
             //println!( "h_guess = {}", h_guess );
         } else {

@@ -49,7 +49,7 @@ fn transient_relief_valve() {
         ( 0.5 * (dp_open + dp_full), 0.5),
         (dp_full, 1.0),
     ];
-    *relief_valve.diameter() = 50.0e-3;        // D = 50mm
+    *relief_valve.diameter().unwrap() = 50.0e-3;        // D = 50mm
     assert_eq!( *relief_valve.steady_open_percent(), 0.0); // Should be closed initially.
     graph.add_edge( relief_valve );
 

@@ -142,8 +142,19 @@ impl Edge {
         }
     }
 
-    pub fn diameter(&mut self) -> &mut f64 {
-        match_edge!(self, edge, {&mut edge.diameter}) //TODO some components don't have diameters
+    pub fn diameter(&mut self) -> Option<&mut f64> {
+        match self {
+            Edge::Pipe(edge) => Some(&mut edge.diameter),
+            Edge::Valve(edge) => Some(&mut edge.diameter),
+            Edge::Pump(edge) => Some(&mut edge.diameter),
+            Edge::Bend(edge) => Some(&mut edge.diameter),
+            Edge::SizeChange(edge) => Some(&mut edge.diameter),
+            Edge::CheckValve(edge) => Some(&mut edge.diameter),
+            Edge::SafetyValve(edge) => Some(&mut edge.diameter),
+            Edge::ReliefValve(edge) => Some(&mut edge.diameter),
+            Edge::BurstingDisk(edge) => Some(&mut edge.diameter),
+            Edge::Generic(_edge) => None,
+        }
     }
 
     pub fn area(&self) -> f64 {
