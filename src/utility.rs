@@ -52,11 +52,11 @@ pub fn laminar_guess( net: &Graph, fluid: &Fluid, g: f64 ) -> (Vec64, Vec64) {
     for i in 0..numel {
         let (ifrom, ito) = net.edges()[i].id();
         let ( a, b ) = ( net.index(ifrom), net.index(ito) );
-        let coefficient = net.edges()[i].k_laminar( fluid.kinematic_viscosity() );
-        k_matrix[a][a] += coefficient;
-        k_matrix[b][b] += coefficient;
-        k_matrix[a][b] -= coefficient;
-        k_matrix[b][a] -= coefficient;
+        let k = net.edges()[i].k_laminar( fluid.kinematic_viscosity() );
+        k_matrix[a][a] += k;
+        k_matrix[b][b] += k;
+        k_matrix[a][b] -= k;
+        k_matrix[b][a] -= k;
     }
 
     let mut boundary_conditions = Vec::<Node>::new();

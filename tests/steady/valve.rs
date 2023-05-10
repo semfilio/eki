@@ -25,7 +25,7 @@ fn steady_valve() {
         (1.0, 1. / 0.25),
     ];
     *valve.steady_open_percent() = 0.5; // k = 7.0
-    *valve.diameter() = 50.0e-3;        // D = 50mm
+    *valve.diameter().unwrap() = 50.0e-3;        // D = 50mm
     graph.add_edge( valve );
     
     

@@ -9,6 +9,7 @@ use crate::edges::{
     safety_valve::SafetyValve,
     relief_valve::ReliefValve,
     bursting_disk::BurstingDisk,
+    generic::Generic,
 };
 use crate::fluid::Fluid;
 use crate::events::TransientEvent;
@@ -25,6 +26,7 @@ pub enum Edge {
     SafetyValve(SafetyValve),
     ReliefValve(ReliefValve),
     BurstingDisk(BurstingDisk),
+    Generic(Generic),
 }
 
 impl std::fmt::Display for Edge {
@@ -39,6 +41,7 @@ impl std::fmt::Display for Edge {
             Edge::SafetyValve(_edge) => write!(f, "Safety Valve"),
             Edge::ReliefValve(_edge) => write!(f, "Relief Valve"),
             Edge::BurstingDisk(_edge) => write!(f, "Bursting Disk"),
+            Edge::Generic(_edge) => write!(f, "Generic"),
         }
     }
 }
@@ -56,6 +59,7 @@ macro_rules! match_edge {
             Edge::SafetyValve($edge) => $block,
             Edge::ReliefValve($edge) => $block,
             Edge::BurstingDisk($edge) => $block,
+            Edge::Generic($edge) => $block,
         }
     };
 }
@@ -96,47 +100,51 @@ impl Edge {
     pub fn length(&mut self) -> Option<&mut f64> {
         match self {
             Edge::Pipe(edge) => Some(&mut edge.length),
-            Edge::Valve(_edge) => None,
-            Edge::Pump(_edge) => None,
-            Edge::Bend(_edge) => None,
-            Edge::SizeChange(_edge) => None,
-            Edge::CheckValve(_edge) => None,
-            Edge::SafetyValve(_edge) => None,
-            Edge::ReliefValve(_edge) => None,
-            Edge::BurstingDisk(_edge) => None,
+            _ => None,
+        }
+    }
+
+    pub fn coefficients(&mut self) -> Option<&mut (f64, f64, f64)> {
+        match self {
+            Edge::Generic(edge) => Some(&mut edge.coefficients),
+            _ => None,
+        }
+    }
+
+    pub fn exponents(&mut self) -> Option<&mut (f64, f64)> {
+        match self {
+            Edge::Generic(edge) => Some(&mut edge.exponents),
+            _ => None,
         }
     }
 
     pub fn radius(&mut self) -> Option<&mut f64> {
         match self {
-            Edge::Pipe(_edge) => None,
-            Edge::Valve(_edge) => None,
-            Edge::Pump(_edge) => None,
             Edge::Bend(edge) => Some(&mut edge.radius),
-            Edge::SizeChange(_edge) => None,
-            Edge::CheckValve(_edge) => None,
-            Edge::SafetyValve(_edge) => None,
-            Edge::ReliefValve(_edge) => None,
-            Edge::BurstingDisk(_edge) => None,
+            _ => None,
         }
     }
 
     pub fn angle(&mut self) -> Option<&mut f64> {
         match self {
-            Edge::Pipe(_edge) => None,
-            Edge::Valve(_edge) => None,
-            Edge::Pump(_edge) => None,
             Edge::Bend(edge) => Some(&mut edge.angle),
-            Edge::SizeChange(_edge) => None,
-            Edge::CheckValve(_edge) => None,
-            Edge::SafetyValve(_edge) => None,
-            Edge::ReliefValve(_edge) => None,
-            Edge::BurstingDisk(_edge) => None,
+            _ => None,
         }
     }
 
-    pub fn diameter(&mut self) -> &mut f64 {
-        match_edge!(self, edge, {&mut edge.diameter})
+    pub fn diameter(&mut self) -> Option<&mut f64> {
+        match self {
+            Edge::Pipe(edge) => Some(&mut edge.diameter),
+            Edge::Valve(edge) => Some(&mut edge.diameter),
+            Edge::Pump(edge) => Some(&mut edge.diameter),
+            Edge::Bend(edge) => Some(&mut edge.diameter),
+            Edge::SizeChange(edge) => Some(&mut edge.diameter),
+            Edge::CheckValve(edge) => Some(&mut edge.diameter),
+            Edge::SafetyValve(edge) => Some(&mut edge.diameter),
+            Edge::ReliefValve(edge) => Some(&mut edge.diameter),
+            Edge::BurstingDisk(edge) => Some(&mut edge.diameter),
+            Edge::Generic(_edge) => None,
+        }
     }
 
     pub fn area(&self) -> f64 {
@@ -146,14 +154,8 @@ impl Edge {
     pub fn roughness(&mut self) -> Option<&mut f64> {
         match self {
             Edge::Pipe(edge) => Some(&mut edge.roughness),
-            Edge::Valve(_edge) => None,
-            Edge::Pump(_edge) => None,
             Edge::Bend(edge) => Some(&mut edge.roughness),
-            Edge::SizeChange(_edge) => None,
-            Edge::CheckValve(_edge) => None,
-            Edge::SafetyValve(_edge) => None,
-            Edge::ReliefValve(_edge) => None,
-            Edge::BurstingDisk(_edge) => None,
+            _ => None, 
         }
     }
 
@@ -163,11 +165,7 @@ impl Edge {
             Edge::Valve(edge) => Some( &mut edge.thickness ),   //TODO maybe we don't need this? just use fluid wave speed?
             Edge::Pump(edge) => Some( &mut edge.thickness ),    //TODO maybe we don't need this? just use fluid wave speed?
             Edge::Bend(edge) => Some( &mut edge.thickness ),
-            Edge::SizeChange(_edge) => None,
-            Edge::CheckValve(_edge) => None,
-            Edge::SafetyValve(_edge) => None,
-            Edge::ReliefValve(_edge) => None,
-            Edge::BurstingDisk(_edge) => None,
+            _ => None,
         }
     }
 
@@ -177,54 +175,33 @@ impl Edge {
             Edge::Valve(edge) => Some( &mut edge.youngs_modulus ),  //TODO maybe we don't need this? just use fluid wave speed?
             Edge::Pump(edge) => Some( &mut edge.youngs_modulus ),   //TODO maybe we don't need this? just use fluid wave speed?
             Edge::Bend(edge) => Some( &mut edge.youngs_modulus ),
-            Edge::SizeChange(_edge) => None,
-            Edge::CheckValve(_edge) => None,
-            Edge::SafetyValve(_edge) => None,
-            Edge::ReliefValve(_edge) => None,
-            Edge::BurstingDisk(_edge) => None,
+            _ => None,
         }
     }
 
     // 1.0 = 100% open
     pub fn open_percent(&mut self) -> Option<&mut Vec<f64>> {
         match self {
-            Edge::Pipe(_edge) => None,
             Edge::Valve(edge) => Some(&mut edge.open_percent),
-            Edge::Pump(_edge) => None,
-            Edge::Bend(_edge) => None,
-            Edge::SizeChange(_edge) => None,
             Edge::CheckValve(edge) => Some(&mut edge.open_percent),
             Edge::SafetyValve(edge) => Some(&mut edge.open_percent),
             Edge::ReliefValve(edge) => Some(&mut edge.open_percent),
             Edge::BurstingDisk(edge) => Some(&mut edge.open_percent),
+            _ => None,
         }
     }
 
     pub fn speed(&mut self) -> Option<&mut Vec<f64>> {
         match self {
-            Edge::Pipe(_edge) => None,
-            Edge::Valve(_edge) => None,
             Edge::Pump(edge) => Some(&mut edge.speed),
-            Edge::Bend(_edge) => None,
-            Edge::SizeChange(_edge) => None,
-            Edge::CheckValve(_edge) => None,
-            Edge::SafetyValve(_edge) => None,
-            Edge::ReliefValve(_edge) => None,
-            Edge::BurstingDisk(_edge) => None,
+            _ => None,
         }
     }
 
     pub fn size_ratio(&mut self) -> Option<&mut f64> {
         match self {
-            Edge::Pipe(_edge) => None,
-            Edge::Valve(_edge) => None,
-            Edge::Pump(_edge) => None,
-            Edge::Bend(_edge) => None,
             Edge::SizeChange(edge) => Some(&mut edge.beta),
-            Edge::CheckValve(_edge) => None,
-            Edge::SafetyValve(_edge) => None,
-            Edge::ReliefValve(_edge) => None,
-            Edge::BurstingDisk(_edge) => None,
+            _ => None,
         }
     }
 
@@ -234,62 +211,41 @@ impl Edge {
 
     pub fn invk_values(&mut self) -> Option<&mut Vec<(f64, f64)>> {
         match self {
-            Edge::Pipe(_edge) => None,
             Edge::Valve(edge) => Some(&mut edge.invk),
-            Edge::Pump(_edge) => None,
-            Edge::Bend(_edge) => None,
-            Edge::SizeChange(_edge) => None,
             Edge::CheckValve(edge) => Some(&mut edge.invk),
             Edge::SafetyValve(edge) => Some(&mut edge.invk),
             Edge::ReliefValve(edge) => Some(&mut edge.invk),
             Edge::BurstingDisk(edge) => Some(&mut edge.invk),
+            _ => None,
         }
     }
 
     pub fn open_dp_values(&mut self) -> Option<&mut Vec<(f64, f64)>> {
         match self {
-            Edge::Pipe(_edge) => None,
-            Edge::Valve(_edge) => None,
-            Edge::Pump(_edge) => None,
-            Edge::Bend(_edge) => None,
-            Edge::SizeChange(_edge) => None,
-            Edge::CheckValve(_edge) => None,
-            Edge::SafetyValve(_edge) => None,
             Edge::ReliefValve(edge) => Some(&mut edge.open_dp),
-            Edge::BurstingDisk(_edge) => None,
+            _ => None,
         }
     }
 
     pub fn pressure_loss_coefficient(&self, step: usize ) -> Option<f64> {
         match self {
-            Edge::Pipe(_edge) => None,
             Edge::Valve(edge) => Some( 1.0 / edge.invk( step ) ),
-            Edge::Pump(_edge) => None,
-            Edge::Bend(_edge) => None, //TODO: Bend pressure loss coefficient
-            Edge::SizeChange(_edge) => None, //TODO: Size change pressure loss coefficient
+            //TODO: Bend pressure loss coefficient
+            //TODO: Size change pressure loss coefficient
             Edge::CheckValve(edge) => Some( 1.0 / edge.invk( step ) ),
             Edge::SafetyValve(edge) => Some( 1.0 / edge.invk( step ) ),
             Edge::ReliefValve(edge) => Some( 1.0 / edge.invk( step ) ),
             Edge::BurstingDisk(edge) => Some( 1.0 / edge.invk( step ) ),
+            _ => None,
         }
     }
-
-    pub fn wave_speed(&self, fluid: &Fluid) -> f64 {
-        match_edge!(self, edge, {edge.wave_speed( fluid )})
-    } 
 
     // The coefficient for the M matrix (typically 0 as we assume infinte wave speed in non-pipes)
     pub fn m_coefficient(&self, fluid: &Fluid, g: f64) -> f64 {
         match self {
             Edge::Pipe(edge) => edge.m_coefficient( fluid, g ),
-            Edge::Valve(_edge) => 0.0,
-            Edge::Pump(_edge) => 0.0,
             Edge::Bend(_edge) => 0.0, //TODO bend m coefficient (length = curve length) ?
-            Edge::SizeChange(_edge) => 0.0,
-            Edge::CheckValve(_edge) => 0.0,
-            Edge::SafetyValve(_edge) => 0.0,
-            Edge::ReliefValve(_edge) => 0.0,
-            Edge::BurstingDisk(_edge) => 0.0,
+            _ => 0.0,
         }
     }
 
@@ -330,8 +286,8 @@ impl Edge {
             Edge::SafetyValve(edge) => edge.resistance( q, dh, nu, g, step ),
             Edge::ReliefValve(edge) => edge.resistance( q, dh, nu, g, step ),
             Edge::BurstingDisk(edge) => edge.resistance( q, dh, nu, g, step ),
+            Edge::Generic(edge) => edge.resistance( q, dh, nu, g ),
         }
-        //TODO use macro since they are all the same
     }
 
     pub fn k_laminar(&self, nu: f64 ) -> f64 {
@@ -344,57 +300,37 @@ impl Edge {
 
     pub fn add_transient_value(&mut self, time: f64 ) {
         match self {
-            Edge::Pipe(_edge) => {},
             Edge::Valve(edge) => edge.add_transient_value( time ), 
             Edge::Pump(edge) => edge.add_transient_value( time ),
-            Edge::Bend(_edge) => {},
-            Edge::SizeChange(_edge) => {},
             Edge::CheckValve(edge) => edge.add_transient_value( time ),
             Edge::SafetyValve(edge) => edge.add_transient_value( time ),
             Edge::ReliefValve(edge) => edge.add_transient_value( time ),
             Edge::BurstingDisk(edge) => edge.add_transient_value( time ),
+            _ => {},
         }
     }
 
     pub fn events(&mut self) -> Option<&mut Vec<TransientEvent>> {
         match self {
-            Edge::Pipe(_edge) => None,
             Edge::Valve(edge) => Some(&mut edge.events),
             Edge::Pump(edge) => Some(&mut edge.events),
-            Edge::Bend(_edge) => None,
-            Edge::SizeChange(_edge) => None,
-            Edge::CheckValve(_edge) => None,
-            Edge::SafetyValve(_edge) => None,
-            Edge::ReliefValve(_edge) => None,
-            Edge::BurstingDisk(_edge) => None,
+            _ => None,
         }
     }
 
     pub fn add_event(&mut self, event: TransientEvent) {
         match self {
-            Edge::Pipe(_edge) => {},
             Edge::Valve(edge) => edge.events.push(event),
             Edge::Pump(edge) => edge.events.push(event),
-            Edge::Bend(_edge) => {},
-            Edge::SizeChange(_edge) => {},
-            Edge::CheckValve(_edge) => {},
-            Edge::SafetyValve(_edge) => {},
-            Edge::ReliefValve(_edge) => {},
-            Edge::BurstingDisk(_edge) => {},
+            _ => {},
         }
     }
 
     pub fn pop_event(&mut self) -> Option<TransientEvent> {
         match self {
-            Edge::Pipe(_edge) => None,
             Edge::Valve(edge) => edge.events.pop(),
             Edge::Pump(edge) => edge.events.pop(),
-            Edge::Bend(_edge) => None,
-            Edge::SizeChange(_edge) => None,
-            Edge::CheckValve(_edge) => None,
-            Edge::SafetyValve(_edge) => None,
-            Edge::ReliefValve(_edge) => None,
-            Edge::BurstingDisk(_edge) => None,
+            _ => None,
         }
     }
 

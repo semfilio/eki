@@ -44,7 +44,7 @@ fn transient_check_valve() {
         (0.0, 0.0),
         (1.0, 1. / 0.25),
     ];
-    *check_valve.diameter() = 50.0e-3;        // D = 50mm
+    *check_valve.diameter().unwrap() = 50.0e-3;        // D = 50mm
     assert_eq!( *check_valve.steady_open_percent(), 1.0); // Should be open initially.
     graph.add_edge( check_valve );
 

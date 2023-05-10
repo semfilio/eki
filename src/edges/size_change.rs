@@ -1,6 +1,5 @@
 use std::f64::consts::PI;
 use crate::node::Node;
-use crate::fluid::Fluid;
 
 #[derive(Clone, PartialEq, Debug, Default, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "persistence", serde(default))]
@@ -42,12 +41,6 @@ impl SizeChange {
 
     pub fn area(&self) -> f64 {
         PI * self.diameter * self.diameter / 4.0
-    }
-
-    pub fn wave_speed(&self, fluid: &Fluid ) -> f64 {
-        let k_over_rho: f64 =  fluid.bulk_modulus() / fluid.density();
-        let a = k_over_rho;
-        a.sqrt()
     }
 
     fn lambda( beta: f64 ) -> f64 {

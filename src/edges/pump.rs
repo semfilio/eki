@@ -1,6 +1,5 @@
 use std::f64::consts::PI;
 use crate::node::Node;
-use crate::fluid::Fluid;
 use crate::events::TransientEvent;
 
 #[derive(Clone, PartialEq, Debug, Default, serde::Serialize, serde::Deserialize)]
@@ -44,30 +43,6 @@ impl Pump {
             //TODO do we need a max/min speed?
         }
     }
-
-    /*pub fn new_params( from: Node, to: Node, c: Vec<f64>, rated: (f64, f64, f64, f64) ) -> Self {
-        Pump {
-            from,
-            to,
-            mass_flow: vec![ 0.0 ],
-            c,
-            q_rated: rated.0,         
-            h_rated: rated.1,
-            n_rated: rated.2,
-            d_rated: rated.3,                      
-            diameter: rated.3,                     
-            speed: vec![ rated.2 ],
-            thickness: 5.0e-3,                      // 5mm
-            youngs_modulus: 2.0e11,                 // Steel
-            min_diameter: rated.3,                 
-            max_diameter: rated.3,                 
-            min_speed: rated.2,                     
-            max_speed: rated.2,                     
-            events: vec![],
-            width: 15.0, 
-            selected: false,
-        }
-    }*/
 
     pub fn n(&self, step: usize ) -> f64 {
         self.speed[ step ] / self.n_rated
@@ -119,14 +94,6 @@ impl Pump {
 
     pub fn area(&self) -> f64 {
         PI * self.diameter * self.diameter / 4.0
-    }
-
-    pub fn wave_speed(&self, fluid: &Fluid ) -> f64 {
-        let k_over_rho: f64 =  fluid.bulk_modulus() / fluid.density();
-        let dk: f64 = self.diameter * fluid.bulk_modulus();
-        let te: f64 = self.thickness * self.youngs_modulus;
-        let a = k_over_rho / ( 1.0 + ( dk / te ) );
-        a.sqrt()
     }
 
     //TODO ???

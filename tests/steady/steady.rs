@@ -17,6 +17,7 @@ mod check_valve;
 mod safety_valve;
 mod relief_valve;
 mod bursting_disk;
+mod generic;
 
 #[test]
 fn default() {
