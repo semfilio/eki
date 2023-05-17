@@ -8,3 +8,4 @@ pub mod safety_valve;
 pub mod relief_valve;
 pub mod bursting_disk;
 pub mod generic;
+pub mod open_pipe;
