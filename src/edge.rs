@@ -10,6 +10,7 @@ use crate::edges::{
     relief_valve::ReliefValve,
     bursting_disk::BurstingDisk,
     generic::Generic,
+    open_pipe::OpenPipe,
 };
 use crate::fluid::Fluid;
 use crate::events::TransientEvent;
@@ -27,6 +28,7 @@ pub enum Edge {
     ReliefValve(ReliefValve),
     BurstingDisk(BurstingDisk),
     Generic(Generic),
+    OpenPipe(OpenPipe),
 }
 
 impl std::fmt::Display for Edge {
@@ -42,6 +44,7 @@ impl std::fmt::Display for Edge {
             Edge::ReliefValve(_edge) => write!(f, "Relief Valve"),
             Edge::BurstingDisk(_edge) => write!(f, "Bursting Disk"),
             Edge::Generic(_edge) => write!(f, "Generic"),
+            Edge::OpenPipe(_edge) => write!(f, "Open Pipe"),
         }
     }
 }
@@ -60,6 +63,7 @@ macro_rules! match_edge {
             Edge::ReliefValve($edge) => $block,
             Edge::BurstingDisk($edge) => $block,
             Edge::Generic($edge) => $block,
+            Edge::OpenPipe($edge) => $block,
         }
     };
 }
@@ -144,6 +148,7 @@ impl Edge {
             Edge::ReliefValve(edge) => Some(&mut edge.diameter),
             Edge::BurstingDisk(edge) => Some(&mut edge.diameter),
             Edge::Generic(_edge) => None,
+            Edge::OpenPipe(edge) => Some(&mut edge.diameter),
         }
     }
 
@@ -220,6 +225,13 @@ impl Edge {
         }
     }
 
+    pub fn k(&mut self) -> Option<&mut f64> {
+        match self {
+            Edge::OpenPipe(edge) => Some(&mut edge.k),
+            _ => None,
+        }
+    }
+
     pub fn open_dp_values(&mut self) -> Option<&mut Vec<(f64, f64)>> {
         match self {
             Edge::ReliefValve(edge) => Some(&mut edge.open_dp),
@@ -236,6 +248,7 @@ impl Edge {
             Edge::SafetyValve(edge) => Some( 1.0 / edge.invk( step ) ),
             Edge::ReliefValve(edge) => Some( 1.0 / edge.invk( step ) ),
             Edge::BurstingDisk(edge) => Some( 1.0 / edge.invk( step ) ),
+            Edge::OpenPipe(edge) => Some( edge.k ),
             _ => None,
         }
     }
@@ -287,6 +300,7 @@ impl Edge {
             Edge::ReliefValve(edge) => edge.resistance( q, dh, nu, g, step ),
             Edge::BurstingDisk(edge) => edge.resistance( q, dh, nu, g, step ),
             Edge::Generic(edge) => edge.resistance( q, dh, nu, g ),
+            Edge::OpenPipe(edge) => edge.resistance( q, dh, nu, g ),
         }
     }
 
