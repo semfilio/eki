@@ -36,3 +36,25 @@ fn water() {
     assert_eq!(fluid.min_temperature().unwrap(), 273.15 );
     assert_eq!(fluid.max_temperature().unwrap(), 273.15 + 100.0 );
 }
+
+
+/* TRIAL TESTS - SEM */
+
+#[test] //Trial-Sem
+fn fluid_new() {
+    let fluid = Fluid::new_basic( 850.0, 0.001/850.0, 2.0e11 );
+    assert_eq!(fluid.density(), 850.0); 
+    assert_eq!(fluid.kinematic_viscosity(), 0.001/850.0);
+    assert_eq!(fluid.bulk_modulus(), 2.0e11);   
+
+}
+
+
+#[test] //Trial-Sem
+fn water_default() {
+    let mut fluid = Fluid::Water( Water::default() );
+    assert_eq!(*fluid.temperature().unwrap(), 273.15 + 15.0 );
+    assert_eq!(fluid.density(), ( 999.25 + 998.95 ) / 2. );
+    assert_eq!(fluid.kinematic_viscosity(), ( ( 1.169e-3 + 1.109e-3 ) / 2. ) / ( ( 999.25 + 998.95 ) / 2. ) );
+    assert_eq!(fluid.bulk_modulus(), ( 999.25 + 998.95 ) / 2. * ( ( 1462. + 1468. ) / 2. ) * ( ( 1462. + 1468. ) / 2. ) );
+}
